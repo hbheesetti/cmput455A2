@@ -13,6 +13,7 @@ import numpy as np
 import re
 from sys import stdin, stdout, stderr
 from typing import Any, Callable, Dict, List, Tuple
+import time
 
 from board_base import (
     BLACK,
@@ -44,6 +45,7 @@ class GtpConnection:
         self._debug_mode: bool = debug_mode
         self.go_engine = go_engine
         self.board: GoBoard = board
+        self.timelimit: int = 1
         self.commands: Dict[str, Callable[[List[str]], None]] = {
             "protocol_version": self.protocol_version_cmd,
             "quit": self.quit_cmd,
@@ -383,10 +385,20 @@ class GtpConnection:
     
     def timelimit_cmd(self, args: List[str]) -> None:
         """ Implement this function for Assignment 2 """
+        if (int(args[0]) >= 1 and int(args[0]) <= 100 ):
+            self.timelimit = args[0]
+            # self.respond(self.timelimit)
+        else:
+            self.respond("timelimit has to be between 1 and 100 seconds")
         pass
 
     def solve_cmd(self, args: List[str]) -> None:
         """ Implement this function for Assignment 2 """
+        sec = time.time()
+        # while sec < float(self.timelimit):
+        #     time.sleep(5)
+        #     print("still inside")
+        print("out" +str(sec))
         pass
 
     """
