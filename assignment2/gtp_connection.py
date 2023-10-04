@@ -14,6 +14,7 @@ import re
 from sys import stdin, stdout, stderr
 from typing import Any, Callable, Dict, List, Tuple
 import time
+from boolean_minimax import minimaxBooleanAND, minimaxBooleanOR
 
 from board_base import (
     BLACK,
@@ -393,12 +394,9 @@ class GtpConnection:
         pass
 
     def solve_cmd(self, args: List[str]) -> None:
-        """ Implement this function for Assignment 2 """
-        sec = time.time()
-        # while sec < float(self.timelimit):
-        #     time.sleep(5)
-        #     print("still inside")
-        print("out" +str(sec))
+        """currently implementing the minmax function"""
+        self.respond("in the solve")
+        minimaxBooleanOR(self.board)
         pass
 
     """

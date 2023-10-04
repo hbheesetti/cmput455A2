@@ -393,3 +393,11 @@ class GoBoard(object):
             if counter == 5 and prev != EMPTY:
                 return prev
         return EMPTY
+    
+    def undo_move(self, point):
+        self.board[point] = EMPTY
+        self.current_player = opponent(self.current_player)
+
+    def legal_moves(self):
+        moves = self.get_empty_points()
+        return moves
