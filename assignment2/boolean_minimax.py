@@ -46,20 +46,20 @@ def minimaxBooleanAND(board: GoBoard):
     return True
 
 
-# INFINITY = 1000000
-# def alphabeta(state, alpha, beta):
-#     if state.endOfGame():
-#         return state.staticallyEvaluateForToPlay() 
-#     for m in state.legalMoves():
-#         state.play(m)
-#         value = -alphabeta(state, -beta, -alpha)
-#         if value > alpha:
-#             alpha = value
-#         state.undoMove()
-#         if value >= beta: 
-#             return beta   # or value in failsoft (later)
-#     return alpha
+INFINITY = 1000000
+def alphabeta(board: GoBoard, alpha, beta):
+    if board.end_of_game():
+        return board.staticallyEvaluateForToPlay() 
+    for m in board.legal_moves():
+        board.play_move(m)
+        value = -alphabeta(state, -beta, -alpha)
+        if value > alpha:
+            alpha = value
+        board.undoMove()
+        if value >= beta: 
+            return beta   # or value in failsoft (later)
+    return alpha
 
-# # initial call with full window
-# def callAlphabeta(rootState):
-#     return alphabeta(rootState, -INFINITY, INFINITY)
+# initial call with full window
+def callAlphabeta(rootState):
+    return alphabeta(rootState, -INFINITY, INFINITY)
