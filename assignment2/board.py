@@ -194,9 +194,10 @@ class GoBoard(object):
         return can_play_move
 
     def end_of_game(self) -> bool:
-        return self.last_move == PASS \
-           and self.last2_move == PASS
-           
+        if self.detect_five_in_a_row() != EMPTY:
+            return True
+        return False
+    
     def get_empty_points(self) -> np.ndarray:
         """
         Return:
@@ -402,11 +403,11 @@ class GoBoard(object):
         moves = self.get_empty_points()
         return moves
 
-    def staticallyEvaluateForToPlay(self) {
+    def staticallyEvaluateForToPlay(self) :
         if self.detect_five_in_a_row() == EMPTY:
             score = 0
         elif self.detect_five_in_a_row() == BLACK:
             score = -100000000000
         elif self.detect_five_in_a_row() == WHITE:
             score = 100000000000
-    }
+        return score
