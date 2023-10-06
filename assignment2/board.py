@@ -52,6 +52,7 @@ class GoBoard(object):
         self.calculate_rows_cols_diags()
         self.black_captures = 0
         self.white_captures = 0
+        self.capture_stack = []
 
     def add_two_captures(self, color: GO_COLOR) -> None:
         if color == BLACK:
@@ -310,6 +311,7 @@ class GoBoard(object):
         Tries to play a move of color on the point.
         Returns whether or not the point was empty.
         """
+        capture = False
         if self.board[point] != EMPTY:
             return False
         self.board[point] = color
@@ -322,11 +324,13 @@ class GoBoard(object):
             if self.board[point+offset] == O and self.board[point+(offset*2)] == O and self.board[point+(offset*3)] == color:
                 self.board[point+offset] = EMPTY
                 self.board[point+(offset*2)] = EMPTY
+                capture = True
+                self.capture_stack.append([point+offset,point+(offset*2),O])
                 if color == BLACK:
                     self.black_captures += 2
                 else:
                     self.white_captures += 2
-        return True
+        return True, capture
     
     def neighbors_of_color(self, point: GO_POINT, color: GO_COLOR) -> List:
         """ List of neighbors of point of given color """
@@ -395,7 +399,13 @@ class GoBoard(object):
                 return prev
         return EMPTY
     
-    def undo_move(self, point):
+    def undo_move(self, point, capture):
+        # undo captures and capture counts
+        if capture:
+            print(self.capture_stack)
+            cap = self.capture_stack.pop(0)
+            self.board[cap[0]] = GO_COLOR(cap[2])
+            self.board[cap[1]] = GO_COLOR(cap[2])
         self.board[point] = EMPTY
         self.current_player = opponent(self.current_player)
 

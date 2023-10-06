@@ -14,7 +14,7 @@ import re
 from sys import stdin, stdout, stderr
 from typing import Any, Callable, Dict, List, Tuple
 import time
-from boolean_minimax import minimaxBooleanAND, minimaxBooleanOR, callAlphabeta
+from boolean_minimax import minimaxBooleanAND, minimaxBooleanOR, callAlphabeta, undoTest
 
 from board_base import (
     BLACK,
@@ -333,7 +333,7 @@ class GtpConnection:
             move = coord_to_point(coord[0], coord[1], self.board.size)
             
             color = color_to_int(board_color)
-            if not self.board.play_move(move, color):
+            if not self.board.play_move(move, color)[0]:
                 # self.respond("Illegal Move: {}".format(board_move))
                 self.respond('illegal move: "{} {}" occupied'.format(board_color, board_move))
                 return
@@ -396,7 +396,9 @@ class GtpConnection:
     def solve_cmd(self, args: List[str]) -> None:
         """currently implementing the minmax function"""
         self.respond("in the solve")
-        callAlphabeta(self.board, 3)
+        undoTest(self.board)
+        # sol = callAlphabeta(self.board)
+        # print(sol)
         pass
 
     """
