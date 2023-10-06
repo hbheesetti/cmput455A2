@@ -194,7 +194,7 @@ class GoBoard(object):
         return can_play_move
 
     def end_of_game(self) -> bool:
-        if self.detect_five_in_a_row() != EMPTY:
+        if self.get_empty_points().size == 0 or self.detect_five_in_a_row() != EMPTY:
             return True
         return False
     
