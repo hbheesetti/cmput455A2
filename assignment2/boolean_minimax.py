@@ -68,11 +68,12 @@ INFINITY = 1000000
 # initial call with full window
 
 def callAlphabeta(rootState: GoBoard):
-    return minimax(rootState, -INFINITY, INFINITY, 5)
+    copyboard = rootState.copy()
+    return minimax(rootState,copyboard,-INFINITY, INFINITY, 0)
 
-def minimax(board: GoBoard, alpha, beta, depth):
+def minimax(board: GoBoard,copy, alpha, beta, depth):
     result = (0,0)
-    if board.end_of_game() or depth== 0:
+    if board.end_of_game():
         result = (board.staticallyEvaluateForToPlay(), None)
         return result
 
@@ -80,16 +81,15 @@ def minimax(board: GoBoard, alpha, beta, depth):
     m = moves[0]
     
     for m in moves:
-        print(point_to_coord(m, board.size))
+        if depth == 0:
+            board = copy
         _,cap = board.play_move(m, board.current_player)
-        print(GoBoardUtil.get_twoD_board(board))
-        value,_ = minimax(board, -beta, -alpha,depth-1)
+        value,_ = minimax(board,copy, -beta, -alpha,depth+1)
         value = -value
         if value > alpha:
             alpha = value
             m = m
         board.undo_move(m,cap)
-        print(GoBoardUtil.get_twoD_board(board))
         if value >= beta:
             result = (beta, point_to_coord(m, board.size))
             return result
@@ -162,6 +162,14 @@ def undoTest(board: GoBoard):
     board.play_move(move_to_coord("a3", board.size),WHITE)
     print(GoBoardUtil.get_twoD_board(board))
     _, cap = board.play_move(move_to_coord("a4", board.size),BLACK)
+    print(cap)
     print(GoBoardUtil.get_twoD_board(board))
+    board.play_move(move_to_coord("b1", board.size),BLACK)
+    board.play_move(move_to_coord("b2", board.size),WHITE)
+    board.play_move(move_to_coord("b3", board.size),WHITE)
+    print(GoBoardUtil.get_twoD_board(board))
+    _, cap1 = board.play_move(move_to_coord("b4", board.size),BLACK)
+    print(GoBoardUtil.get_twoD_board(board))
+    board.undo_move(move_to_coord("b4", board.size), cap1)
     board.undo_move(move_to_coord("a4", board.size), cap)
     print(GoBoardUtil.get_twoD_board(board))

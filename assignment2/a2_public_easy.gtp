@@ -27,6 +27,7 @@ timelimit 1
 10 solve
 #?[draw e1]
 
+boardsize 5
 clear_board
 play b d5
 play w a1
@@ -60,6 +61,7 @@ timelimit 1
 20 solve
 #[w]
 
+boardsize 5
 clear_board
 play b c2
 play w e4
@@ -114,6 +116,7 @@ play b e4
 50 genmove w
 #?[e5]
 
+boardsize 5
 clear_board
 play b c3
 play w c2

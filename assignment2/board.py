@@ -195,7 +195,7 @@ class GoBoard(object):
         return can_play_move
 
     def end_of_game(self) -> bool:
-        if self.get_empty_points().size == 0 or self.detect_five_in_a_row() != EMPTY:
+        if self.get_empty_points().size == 0 or self.detect_five_in_a_row() != EMPTY or self.black_captures == 10 or self.white_captures== 0:
             return True
         return False
     
@@ -306,14 +306,14 @@ class GoBoard(object):
                 single_capture = nb_point
         return single_capture
     
-    def play_move(self, point: GO_POINT, color: GO_COLOR) -> bool:
+    def play_move(self, point: GO_POINT, color: GO_COLOR) -> [bool, bool]:
         """
         Tries to play a move of color on the point.
         Returns whether or not the point was empty.
         """
         capture = False
         if self.board[point] != EMPTY:
-            return False
+            return False, capture
         self.board[point] = color
         self.current_player = opponent(color)
         self.last2_move = self.last_move
@@ -326,10 +326,12 @@ class GoBoard(object):
                 self.board[point+(offset*2)] = EMPTY
                 capture = True
                 self.capture_stack.append([point+offset,point+(offset*2),O])
+                # print(self.capture_stack)
                 if color == BLACK:
                     self.black_captures += 2
                 else:
                     self.white_captures += 2
+        # print(True, capture)
         return True, capture
     
     def neighbors_of_color(self, point: GO_POINT, color: GO_COLOR) -> List:
@@ -402,10 +404,14 @@ class GoBoard(object):
     def undo_move(self, point, capture):
         # undo captures and capture counts
         if capture:
-            print(self.capture_stack)
-            cap = self.capture_stack.pop(0)
-            self.board[cap[0]] = GO_COLOR(cap[2])
-            self.board[cap[1]] = GO_COLOR(cap[2])
+            # print(self.capture_stack, ()"undo", capture)
+            cap = self.capture_stack.pop(len(self.capture_stack)-1)
+            self.board[cap[0]] = cap[2]
+            self.board[cap[1]] = cap[2]
+            if cap[2] == 1:
+                self.black_captures = self.black_captures - 2
+            elif cap[2] == 2:
+                self.white_captures = self.white_captures - 2
         self.board[point] = EMPTY
         self.current_player = opponent(self.current_player)
 
