@@ -427,3 +427,106 @@ class GoBoard(object):
         elif self.detect_five_in_a_row() == WHITE:
             score = 100000000000
         return score
+    
+    def generate_score(self, move):
+        '''
+        Need to generate scores to prioritize moves over one another in Alphabeta search.
+        ORDER:
+        1. A win, either 5 in a row or captured score == 10. POINTS: 5
+        2. 4 in a row. POINTS: 4
+        3. 3 in a row. POINTS: 3
+        4. 2 in a row. POINTS: 2
+
+        Other cases to consider:
+        - Blocking an apponents 5 in a row should be more than a 4 in a row but less than a win. (maybe 4.5 points?)
+        - A capture could be worth the same as 3 in a row? (Can change this in the future.)
+
+        '''
+        best_score = 0
+
+        row_count = self.in_row_count(self.rows)
+
+        if self.detect_five_in_a_row():
+            best_score = 5
+
+    def check_neighbours(self, direction, point):
+        '''
+        Function to count the number of matching neighbors in all directions.
+
+        nb_list = [west, east, south, north, southwest, southeast, northwest, northeast]
+        PAIRS:
+            west+east -> 0,1
+            south+north -> 2,3
+            southwest+northeast -> 4,7
+            southeast+northwest ->5,6
+
+        '''
+        nb_list = self._neighbors(point) + self._diag_neighbors(point)
+        NS = 0
+        EW = 0
+        NWSE = 0
+        NESW = 0
+        if direction == 'diagonal':
+            find_all = True
+            while find_all:
+                if self.get_color(nb_list[4]) == self.get_color(point):
+                    NWSE += 1
+                    nb_list[4] = self._diag_neighbors[nb_list[4]][0]
+                if self.get_color(nb_list[7]) == self.get_color(point):
+                    NWSE += 1
+                    nb_list[7] = self._diag_neighbors[nb_list[7]][3]
+
+                if self.get_color(nb_list[5]) == self.get_color(point):
+                    NESW += 1
+                    nb_list[5] = self._diag_neighbors[nb_list[5]][1]
+
+                if self.get_color(nb_list[6]) == self.get_color(point):
+                    NESW += 1
+                    nb_list[6] = self._diag_neighbors[nb_list[6]][2]
+                
+                if self.get_color(point) not in [self.get_color(nb_list[4]), self.get_color(nb_list[5]), self.get_color(nb_list[6]), self.get_color(nb_list[7])]:
+                    find_all = False
+            
+        elif direction == 'horizontal':
+            find_all = True
+            while find_all:
+                if self.get_color(nb_list[0]) == self.get_color(point):
+                    EW += 1
+                    nb_list[0] = self._neighbors[nb_list[0]][0]
+                if self.get_color(nb_list[7]) == self.get_color(point):
+                    EW += 1
+                    nb_list[1] = self._neighbors[nb_list[1]][1]
+                
+                if self.get_color(point) not in [self.get_color(nb_list[0]), self.get_color(nb_list[1])]:
+                    find_all = False
+            
+        elif direction == 'vertical':
+            find_all = True
+            while find_all:
+                if self.get_color(nb_list[2]) == self.get_color(point):
+                    NS += 1
+                    nb_list[2] = self._neighbors[nb_list[2]][2]
+                if self.get_color(nb_list[3]) == self.get_color(point):
+                    NS += 1
+                    nb_list[3] = self._neighbors[nb_list[3]][3]
+                
+                if self.get_color(point) not in [self.get_color(nb_list[2]), self.get_color(nb_list[3])]:
+                    find_all = False
+            
+        
+    def in_row_count(self, list) -> GO_COLOR:
+        """
+        Copy of has_five_in_list, modified to return the number of stones in a row
+        of the current players colour.
+        """
+        prev = BORDER
+        counter = 1
+        for stone in list:
+            if self.get_color(stone) == prev:
+                counter += 1
+            else:
+                counter = 1
+                prev = self.get_color(stone)
+            if counter == 5 and prev != EMPTY:
+                return prev
+        return EMPTY
