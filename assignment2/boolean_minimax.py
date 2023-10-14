@@ -69,36 +69,39 @@ INFINITY = 100000000000
 
 def callAlphabeta(rootState: GoBoard):
     copyboard = rootState.copy()
-    return alphabeta(rootState,copyboard,-INFINITY, INFINITY, 0)
+    for i in copyboard.legal_moves():
+        print(point_to_coord(i, copyboard.size))
+    x = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
+    print(GoBoardUtil.get_twoD_board(copyboard))
+    return x
 
 def alphabeta(board: GoBoard,copy, alpha, beta, depth):
     result = (0,0)
-    if board.end_of_game():
-        print("true", depth)
-        result = (board.staticallyEvaluateForToPlay(), None)
+    if copy.end_of_game():
+        result = (copy.staticallyEvaluateForToPlay(), None)
         return result
 
     # when we have a move ordering function, add an if statement to check depth = 0 
     # if yes use the move ordering function else use the board.legalmoves
-    moves = board.legal_moves()
-    m = moves[0]
+    moves = copy.legal_moves()
+    move = moves[0]
     # print(moves)
     
     for m in moves:
         if depth == 0:
-            board = copy
-        _,cap = board.play_move(m, board.current_player)
-        # print(GoBoardUtil.get_twoD_board(board))
-        value,_ = alphabeta(board,copy, -beta, -alpha,depth+1)
+            copy = board.copy()
+        _,cap = copy.play_move(m, copy.current_player)
+        value,_ = alphabeta(board, copy, -beta, -alpha,depth+1)
         value = -value
         if value > alpha:
             alpha = value
-            m = m
-        board.undo_move(m,cap)
-        if value >= beta:
-            result = (beta, point_to_coord(m, board.size))
+            move = m
+        copy.undo_move(m,cap)
+        if alpha >= beta:
+            move = m
+            result = (beta, point_to_coord(move, copy.size))
             return result
-    result = (alpha, point_to_coord(m, board.size))
+    result = (alpha, point_to_coord(move, copy.size))
     return result
 
 

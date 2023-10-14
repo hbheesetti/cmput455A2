@@ -320,17 +320,22 @@ class GoBoard(object):
         self.last_move = point
         O = opponent(color)
         offsets = [1, -1, self.NS, -self.NS, self.NS+1, -(self.NS+1), self.NS-1, -self.NS+1]
+        capturesList = []
         for offset in offsets:
             if self.board[point+offset] == O and self.board[point+(offset*2)] == O and self.board[point+(offset*3)] == color:
                 self.board[point+offset] = EMPTY
                 self.board[point+(offset*2)] = EMPTY
                 capture = True
-                self.capture_stack.append([point+offset,point+(offset*2),O])
+                capturesList.append(point+offset)
+                capturesList.append(point+(offset*2))
                 # print(self.capture_stack)
                 if color == BLACK:
                     self.black_captures += 2
                 else:
                     self.white_captures += 2
+        if(len(capturesList) > 0):
+            capturesList.append(O)
+            self.capture_stack.append(capturesList)
         # print(True, capture)
         return True, capture
     
@@ -406,15 +411,16 @@ class GoBoard(object):
         if capture:
             # print(self.capture_stack, ()"undo", capture)
             cap = self.capture_stack.pop(len(self.capture_stack)-1)
-            self.board[cap[0]] = cap[2]
-            self.board[cap[1]] = cap[2]
-            if cap[2] == 1:
-                self.black_captures = self.black_captures - 2
-            elif cap[2] == 2:
-                self.white_captures = self.white_captures - 2
+            color = cap[len(cap)-1]
+            for i in range(len(cap)-1) :
+                self.board[cap[i]] = GO_COLOR(color)
+                if color == WHITE:
+                    self.black_captures = self.black_captures - 1
+                elif color == BLACK:
+                    self.white_captures = self.white_captures - 1
         self.board[point] = EMPTY
         self.current_player = opponent(self.current_player)
-
+        
     def legal_moves(self):
         moves = self.get_empty_points()
         return moves
@@ -422,8 +428,8 @@ class GoBoard(object):
     def staticallyEvaluateForToPlay(self) :
         if self.detect_five_in_a_row() == EMPTY:
             score = 0
-        elif self.detect_five_in_a_row() == BLACK:
+        elif self.detect_five_in_a_row() == BLACK or self.black_captures == 10:
             score = 100000000000
-        elif self.detect_five_in_a_row() == WHITE:
+        elif self.detect_five_in_a_row() == WHITE or self.white_captures == 10:
             score = -100000000000
         return score
