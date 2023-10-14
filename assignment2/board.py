@@ -332,6 +332,8 @@ class GoBoard(object):
                 else:
                     self.white_captures += 2
         # print(True, capture)
+        #print(self.check_neighbours(point))
+        #print(self.detect_n_in_a_row(2))
         return True, capture
     
     def neighbors_of_color(self, point: GO_POINT, color: GO_COLOR) -> List:
@@ -444,12 +446,12 @@ class GoBoard(object):
         '''
         best_score = 0
 
-        row_count = self.in_row_count(self.rows)
+        total_rows_list = self.in_row_count(self.rows)
 
         if self.detect_five_in_a_row():
             best_score = 5
 
-    def check_neighbours(self, direction, point):
+    def check_neighbours(self, point):
         '''
         Function to count the number of matching neighbors in all directions.
 
@@ -462,62 +464,98 @@ class GoBoard(object):
 
         '''
         nb_list = self._neighbors(point) + self._diag_neighbors(point)
-        NS = 0
-        EW = 0
-        NWSE = 0
-        NESW = 0
+        NS = 1
+        EW = 1
+        NWSE = 1
+        NESW = 1
+        #print(self.get_color(point))
+        #print(point)
+        direction = 'diagonal'
+        # for nb in nb_list:
+        #     print(nb)
+        #     print(self.get_color(nb))
+
         if direction == 'diagonal':
             find_all = True
             while find_all:
+                print("finding diagonal")
+                
                 if self.get_color(nb_list[4]) == self.get_color(point):
-                    NWSE += 1
-                    nb_list[4] = self._diag_neighbors[nb_list[4]][0]
+                    NESW += 1
+                    nb_list[4] = self._diag_neighbors(nb_list[4])[0]
+                    
                 if self.get_color(nb_list[7]) == self.get_color(point):
-                    NWSE += 1
-                    nb_list[7] = self._diag_neighbors[nb_list[7]][3]
+                    NESW += 1
+                    nb_list[7] = self._diag_neighbors(nb_list[7])[3]
 
                 if self.get_color(nb_list[5]) == self.get_color(point):
-                    NESW += 1
-                    nb_list[5] = self._diag_neighbors[nb_list[5]][1]
+                    NWSE += 1
+                    nb_list[5] = self._diag_neighbors(nb_list[5])[1]
 
                 if self.get_color(nb_list[6]) == self.get_color(point):
-                    NESW += 1
-                    nb_list[6] = self._diag_neighbors[nb_list[6]][2]
+                    NWSE += 1
+                    nb_list[6] = self._diag_neighbors(nb_list[6])[2]
                 
                 if self.get_color(point) not in [self.get_color(nb_list[4]), self.get_color(nb_list[5]), self.get_color(nb_list[6]), self.get_color(nb_list[7])]:
+                    direction = 'horizontal'
                     find_all = False
+                    
             
-        elif direction == 'horizontal':
+        if direction == 'horizontal':
             find_all = True
             while find_all:
+                print("finding horizontal")
                 if self.get_color(nb_list[0]) == self.get_color(point):
                     EW += 1
-                    nb_list[0] = self._neighbors[nb_list[0]][0]
+                    nb_list[0] = self._neighbors(nb_list[0])[0]
                 if self.get_color(nb_list[7]) == self.get_color(point):
                     EW += 1
-                    nb_list[1] = self._neighbors[nb_list[1]][1]
+                    nb_list[1] = self._neighbors(nb_list[1])[1]
                 
                 if self.get_color(point) not in [self.get_color(nb_list[0]), self.get_color(nb_list[1])]:
+                    direction = 'vertical'
                     find_all = False
             
-        elif direction == 'vertical':
+        if direction == 'vertical':
             find_all = True
             while find_all:
+                print("finding vertical")
                 if self.get_color(nb_list[2]) == self.get_color(point):
                     NS += 1
-                    nb_list[2] = self._neighbors[nb_list[2]][2]
+                    nb_list[2] = self._neighbors(nb_list[2])[2]
                 if self.get_color(nb_list[3]) == self.get_color(point):
                     NS += 1
-                    nb_list[3] = self._neighbors[nb_list[3]][3]
+                    nb_list[3] = self._neighbors(nb_list[3])[3]
                 
                 if self.get_color(point) not in [self.get_color(nb_list[2]), self.get_color(nb_list[3])]:
                     find_all = False
+        
+        return [NS, EW, NWSE, NESW] 
             
         
-    def in_row_count(self, list) -> GO_COLOR:
+    def detect_n_in_a_row(self, n) -> GO_COLOR:
         """
-        Copy of has_five_in_list, modified to return the number of stones in a row
-        of the current players colour.
+        Returns BLACK or WHITE if any five in a row is detected for the color
+        EMPTY otherwise.
+        """
+        for r in self.rows:
+            result = self.has_n_in_list(r, n)
+            if result != EMPTY:
+                return result
+        for c in self.cols:
+            result = self.has_n_in_list(c, n)
+            if result != EMPTY:
+                return result
+        for d in self.diags:
+            result = self.has_n_in_list(d, n)
+            if result != EMPTY:
+                return result
+        return EMPTY
+
+    def has_n_in_list(self, list, n) -> GO_COLOR:
+        """
+        Returns BLACK or WHITE if any five in a rows exist in the list.
+        EMPTY otherwise.
         """
         prev = BORDER
         counter = 1
@@ -527,6 +565,7 @@ class GoBoard(object):
             else:
                 counter = 1
                 prev = self.get_color(stone)
-            if counter == 5 and prev != EMPTY:
+            if counter == n and prev != EMPTY:
+                #print('couter is:', counter)
                 return prev
         return EMPTY
