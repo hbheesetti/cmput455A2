@@ -195,7 +195,7 @@ class GoBoard(object):
         return can_play_move
 
     def end_of_game(self) -> bool:
-        if self.get_empty_points().size == 0 or self.detect_five_in_a_row() != EMPTY or self.black_captures == 10 or self.white_captures== 0:
+        if self.get_empty_points().size == 0 or GO_COLOR(self.detect_five_in_a_row()) != EMPTY or self.black_captures >= 10 or self.white_captures >= 10:
             return True
         return False
     
@@ -376,7 +376,7 @@ class GoBoard(object):
                 return result
         for c in self.cols:
             result = self.has_five_in_list(c)
-            if result != EMPTY:
+            if result != EMPTY:        
                 return result
         for d in self.diags:
             result = self.has_five_in_list(d)
