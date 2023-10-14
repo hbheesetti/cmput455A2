@@ -13,7 +13,7 @@ from board import GoBoard
 from board_util import GoBoardUtil
 from typing import Any, Callable, Dict, List, Tuple
 from board_base import coord_to_point
-INFINITY = 1000000
+INFINITY = 100000000000
 
 # def minimaxBooleanOR(board: GoBoard):
 #     # print("lastmove",board.last_move)
@@ -69,12 +69,12 @@ INFINITY = 1000000
 
 def callAlphabeta(rootState: GoBoard):
     copyboard = rootState.copy()
-    print(rootState.current_player)
     return alphabeta(rootState,copyboard,-INFINITY, INFINITY, 0)
 
 def alphabeta(board: GoBoard,copy, alpha, beta, depth):
     result = (0,0)
     if board.end_of_game():
+        print("true", depth)
         result = (board.staticallyEvaluateForToPlay(), None)
         return result
 

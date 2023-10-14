@@ -423,7 +423,7 @@ class GoBoard(object):
         if self.detect_five_in_a_row() == EMPTY:
             score = 0
         elif self.detect_five_in_a_row() == BLACK:
-            score = -100000000000
-        elif self.detect_five_in_a_row() == WHITE:
             score = 100000000000
+        elif self.detect_five_in_a_row() == WHITE:
+            score = -100000000000
         return score
