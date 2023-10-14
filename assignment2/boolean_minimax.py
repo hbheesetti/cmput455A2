@@ -67,6 +67,7 @@ INFINITY = 100000000000
 
 # initial call with full window
 
+
 def callAlphabeta(rootState: GoBoard):
     copyboard = rootState.copy()
     for i in copyboard.legal_moves():
@@ -88,9 +89,13 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
     # print(moves)
     
     for m in moves:
+        #move = m
+        #print(point_to_coord(move, copy.size))
         if depth == 0:
+            #print(GoBoardUtil.get_twoD_board(copy))
             copy = board.copy()
         _,cap = copy.play_move(m, copy.current_player)
+        #print(GoBoardUtil.get_twoD_board(copy))
         value,_ = alphabeta(board, copy, -beta, -alpha,depth+1)
         value = -value
         if value > alpha:
@@ -98,7 +103,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
             move = m
         copy.undo_move(m,cap)
         if alpha >= beta:
-            move = m
+            #move = m
             result = (beta, point_to_coord(move, copy.size))
             return result
     result = (alpha, point_to_coord(move, copy.size))

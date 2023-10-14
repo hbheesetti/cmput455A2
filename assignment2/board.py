@@ -426,10 +426,21 @@ class GoBoard(object):
         return moves
 
     def staticallyEvaluateForToPlay(self) :
-        if self.detect_five_in_a_row() == EMPTY:
-            score = 0
-        elif self.detect_five_in_a_row() == BLACK or self.black_captures == 10:
+        captures = 0
+        opp_captures = 0
+
+        if(self.current_player == BLACK):
+            captures = self.black_captures
+            opp_captures = self.white_captures
+        else:
+            captures = self.white_captures
+            opp_captures = self.black_captures
+
+        if self.detect_five_in_a_row() == self.current_player or captures == 10:
             score = 100000000000
-        elif self.detect_five_in_a_row() == WHITE or self.white_captures == 10:
+        elif self.detect_five_in_a_row() == opponent(self.current_player) or opp_captures == 10:
             score = -100000000000
+        elif self.detect_five_in_a_row() == EMPTY:
+            score = 0
+            
         return score
