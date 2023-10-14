@@ -333,7 +333,7 @@ class GoBoard(object):
                     self.white_captures += 2
         # print(True, capture)
         #print(self.check_neighbours(point))
-        #print(self.detect_n_in_a_row(2))
+        self.detect_n_in_a_row(2)
         return True, capture
     
     def neighbors_of_color(self, point: GO_POINT, color: GO_COLOR) -> List:
@@ -538,19 +538,32 @@ class GoBoard(object):
         Returns BLACK or WHITE if any five in a row is detected for the color
         EMPTY otherwise.
         """
+        all_n = {}
+        counter = 0
         for r in self.rows:
-            result = self.has_n_in_list(r, n)
+            result, b, w = self.has_n_in_list(r, n)
             if result != EMPTY:
-                return result
+                all_n["row"].append(result)
+                counter += 1
+                #return result
         for c in self.cols:
-            result = self.has_n_in_list(c, n)
+            result, b, w = self.has_n_in_list(c, n)
             if result != EMPTY:
-                return result
+                all_n["col"] = result
+                #counter += 1
+                #return result
         for d in self.diags:
-            result = self.has_n_in_list(d, n)
+            result, b, w = self.has_n_in_list(d, n)
             if result != EMPTY:
-                return result
-        return EMPTY
+                all_n["diag"] = result
+                counter += 1
+                #return result
+        print("WHITE:", w)
+        print("BLACK:", b)
+        if len(all_n) != 0:
+            return all_n
+        else:
+            return EMPTY
 
     def has_n_in_list(self, list, n) -> GO_COLOR:
         """
@@ -559,13 +572,106 @@ class GoBoard(object):
         """
         prev = BORDER
         counter = 1
+        set = []
+        all = []
+        white_moves = []
+        black_moves = []
+        #print(self.size)
+        c = 0
+        print("2 =", point_to_coord(2, self.size))
         for stone in list:
+            #print(coord_to_point('a', 1, 7))
+            #print("C", counter)
+            #print("Stone colour =", self.get_color(stone))
+            #print("This is the set:", set)
+            if set.count(prev) == 0:
+                set.append(prev)
+
+            print("STONE", stone)
+            if self.get_color(stone) == 0 and all.count(set) != 0:
+                if self.get_color(set[0]) == 1:
+                    black_moves.append(stone)
+                elif self.get_color(set[0]) == 2:
+                    white_moves.append(stone)
+            
             if self.get_color(stone) == prev:
+                set.append(stone)
                 counter += 1
+            # if self.get_color(stone) == 0 and len(set) == 2:
+            #     print("The stone is empty, this is the set", set)
             else:
+                set = []
                 counter = 1
                 prev = self.get_color(stone)
-            if counter == n and prev != EMPTY:
-                #print('couter is:', counter)
-                return prev
-        return EMPTY
+            if counter == n and prev != EMPTY and set not in all:
+                
+                #print(set)
+                #print('Counter is:', counter)
+                #print('Prev', prev)
+                
+                all.append(set)
+                #return prev
+        #print(all)
+        if len(all) != 0:
+            return all, black_moves, white_moves
+        else:
+            return EMPTY, black_moves, white_moves
+        
+
+
+'''
+DELETE LATER
+'''
+
+def point_to_coord(point: GO_POINT, boardsize: int) -> Tuple[int, int]:
+    """
+    Transform point given as board array index 
+    to (row, col) coordinate representation.
+    Special case: PASS is transformed to (PASS,PASS)
+    """
+    if point == PASS:
+        return (PASS, PASS)
+    else:
+        NS = boardsize + 1
+        point = divmod(point, NS)
+        return format_point(point)
+
+def format_point(move: Tuple[int, int]) -> str:
+    """
+    Return move coordinates as a string such as 'A1', or 'PASS'.
+    """
+    assert MAXSIZE <= 25
+    column_letters = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
+    if move[0] == PASS:
+        return "PASS"
+    row, col = move
+    if not 0 <= row < MAXSIZE or not 0 <= col < MAXSIZE:
+        raise ValueError
+    return column_letters[col - 1] + str(row)
+
+def move_to_coord(point_str: str, board_size: int) -> Tuple[int, int]:
+    """
+    Convert a string point_str representing a point, as specified by GTP,
+    to a pair of coordinates (row, col) in range 1 .. board_size.
+    Raises ValueError if point_str is invalid
+    """
+    if not 2 <= board_size <= MAXSIZE:
+        raise ValueError("board_size out of range")
+    s = point_str.lower()
+    if s == "pass":
+        return (PASS, PASS)
+    try:
+        col_c = s[0]
+        if (not "a" <= col_c <= "z") or col_c == "i":
+            raise ValueError
+        col = ord(col_c) - ord("a")
+        if col_c < "i":
+            col += 1
+        row = int(s[1:])
+        if row < 1:
+            raise ValueError
+    except (IndexError, ValueError):
+        raise ValueError("wrong coordinate")
+    if not (col <= board_size and row <= board_size):
+        raise ValueError("wrong coordinate")
+    return coord_to_point(row, col,board_size)
