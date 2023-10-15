@@ -72,8 +72,6 @@ seen_states = {}
 
 import signal
 def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
-    
-
     class TimeoutError(Exception):
         pass
 
@@ -82,12 +80,12 @@ def handler(signum, frame):
 
     # set the timeout handler
 
-def callAlphabeta(rootState: GoBoard):
+def callAlphabeta(rootState: GoBoard, timelimit):
     copyboard = rootState.copy()
     # x = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
     #print(GoBoardUtil.get_twoD_board(copyboard))
     signal.signal(signal.SIGALRM, handler) 
-    signal.alarm(2)
+    signal.alarm(int(timelimit))
     try:
         result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
     except TimeoutError as exc:

@@ -395,7 +395,7 @@ class GtpConnection:
 
     def solve_cmd(self, args: List[str]) -> None:
         """currently implementing the minmax function"""
-        sol = callAlphabeta(self.board)
+        sol = callAlphabeta(self.board, self.timelimit)
         s = ""
         self.respond(sol)
         if sol[0] == 0:
