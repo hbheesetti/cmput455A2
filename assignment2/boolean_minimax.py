@@ -12,8 +12,10 @@ from board_base import (
 from board import GoBoard
 from board_util import GoBoardUtil
 from typing import Any, Callable, Dict, List, Tuple
+import math
 from board_base import coord_to_point
 INFINITY = 100000000000
+seen_states = {}
 
 # def minimaxBooleanOR(board: GoBoard):
 #     # print("lastmove",board.last_move)
@@ -70,8 +72,6 @@ INFINITY = 100000000000
 
 def callAlphabeta(rootState: GoBoard):
     copyboard = rootState.copy()
-    for i in copyboard.legal_moves():
-        print(point_to_coord(i, copyboard.size))
     x = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
     print(GoBoardUtil.get_twoD_board(copyboard))
     return x
@@ -86,8 +86,28 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
     # if yes use the move ordering function else use the board.legalmoves
     moves = copy.legal_moves()
     move = moves[0]
+    #skipped_moves = []
     # print(moves)
     
+    # faulty hash (just in case)
+    """ list = GoBoardUtil.get_twoD_board(copy)
+    exp = 0
+    code = 0
+    for item in list:
+        for num in item:
+            code += num*(math.pow(3,exp))
+            exp+=1
+    if(code in seen_states.keys()):
+        if(seen_states[code] == (-2*INFINITY,0)):
+            result = (-2*INFINITY,0)
+            return result
+        else:
+            result,player = seen_states[code]
+            if(player != copy.current_player):
+                result = result*-1
+            return  result,None
+    seen_states[code] = (-2*INFINITY,0)
+    """
     for m in moves:
         #move = m
         #print(point_to_coord(move, copy.size))
@@ -102,10 +122,12 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
             alpha = value
             move = m
         copy.undo_move(m,cap)
+        #seen_states[code] = (value, copy.current_player)
         if alpha >= beta:
             #move = m
             result = (beta, point_to_coord(move, copy.size))
             return result
+
     result = (alpha, point_to_coord(move, copy.size))
     return result
 
