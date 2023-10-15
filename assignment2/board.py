@@ -632,10 +632,10 @@ class GoBoard(object):
                 # white_moves += list(set(w)-set(white_moves))
                 # black_moves += list(set(b)-set(black_moves))
                 #return result
-        print("WHITE:", wd)
-        print("BLACK:", bd)
-        print(all_n[1], all_n[2], all_n[3])
-        print("Done detect_n_in_a_row")
+        #print("WHITE:", wd)
+        #print("BLACK:", bd)
+        #print(all_n[1], all_n[2], all_n[3])
+        #print("Done detect_n_in_a_row")
         #return EMPTY
 
     def has_n_in_list(self, list, n) -> GO_COLOR:
@@ -660,14 +660,14 @@ class GoBoard(object):
             if self.get_color(stone) == 0 :
                 
                 if prev_stone in set:
-                    print("Stone is empty and prev in set")
+                    #print("Stone is empty and prev in set")
                     if self.get_color(set[0]) == 1:
-                        print('black')
+                        #print('black')
                         black_moves.append(stone)
                     elif self.get_color(set[0]) == 2:
-                        print('white')
+                        #print('white')
                         white_moves.append(stone)
-                        print(white_moves)
+                        #print(white_moves)
                 # else:
                 #     empties.append(stone)
                 
@@ -709,8 +709,8 @@ class GoBoard(object):
         
         
         if len(all) != 0:
-            print("ALL", all)
-            print("WHITE", white_moves)
+            #print("ALL", all)
+            #print("WHITE", white_moves)
             return all, black_moves, white_moves
         else:
             return EMPTY, black_moves, white_moves
