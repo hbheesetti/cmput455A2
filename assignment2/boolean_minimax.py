@@ -13,6 +13,7 @@ from board import GoBoard
 from board_util import GoBoardUtil
 from typing import Any, Callable, Dict, List, Tuple
 import math
+import operator
 from board_base import coord_to_point
 INFINITY = 100000000000
 seen_states = {}
@@ -73,7 +74,7 @@ seen_states = {}
 def callAlphabeta(rootState: GoBoard):
     copyboard = rootState.copy()
     x = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
-    print(GoBoardUtil.get_twoD_board(copyboard))
+    #print(GoBoardUtil.get_twoD_board(copyboard))
     return x
 
 def alphabeta(board: GoBoard,copy, alpha, beta, depth):
@@ -84,7 +85,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
 
     # when we have a move ordering function, add an if statement to check depth = 0 
     # if yes use the move ordering function else use the board.legalmoves
-    moves = copy.legal_moves()
+    moves = order_moves(copy)
     move = moves[0]
     #skipped_moves = []
     # print(moves)
@@ -130,6 +131,84 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
 
     result = (alpha, point_to_coord(move, copy.size))
     return result
+
+def order_moves(board: GoBoard):
+    cur_play = board.current_player
+    ordered_moves = []
+
+    black_4, white_4 = board.detect_n_in_a_row(4)
+
+    black_3, white_3 = board.detect_n_in_a_row(3)
+
+    black_2, white_2 = board.detect_n_in_a_row(2)
+
+    if cur_play == BLACK:
+        if len(list(black_4.keys())) > 0:
+            auto_win = list(black_4.keys())
+            return auto_win
+        if len(black_3) != 0:
+            if (max(black_3.items(), key=operator.itemgetter(1))[1] >= 5):
+                auto_win = [max(black_3.items(), key=operator.itemgetter(1))[0]]
+                return auto_win
+        if len(black_2) != 0:
+            if (max(black_2.items(), key=operator.itemgetter(1))[1] >= 5):
+                auto_win = [max(black_2.items(), key=operator.itemgetter(1))[0]]
+                return auto_win
+        
+        if len(list(white_4.keys())) > 0:
+            auto_block = list(white_4.keys())
+            return auto_block
+        if len(white_3) != 0:
+            if (max(white_3.items(), key=operator.itemgetter(1))[1] >= 5):
+                auto_block = [max(white_3.items(), key=operator.itemgetter(1))[0]]
+                return auto_block
+        if len(white_2) != 0: 
+            if (max(white_2.items(), key=operator.itemgetter(1))[1] >= 5):
+                auto_block = [max(white_2.items(), key=operator.itemgetter(1))[0]]
+                return auto_block
+
+        ordered_moves += list(black_3.keys())
+
+        ordered_moves += list(set(list(black_2.keys()))-set(ordered_moves))
+
+        ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
+
+        return ordered_moves
+    
+    else:
+        if len(list(white_4.keys())) > 0:
+            auto_win = list(white_4.keys())
+            return auto_win
+        if len(white_3) != 0: 
+            if (max(white_3.items(), key=operator.itemgetter(1))[1] >= 5):
+                auto_win = [max(white_3.items(), key=operator.itemgetter(1))[0]]
+                return auto_win
+        if len(white_2) != 0: 
+            if (max(white_2.items(), key=operator.itemgetter(1))[1] >= 5):
+                auto_win = [max(white_2.items(), key=operator.itemgetter(1))[0]]
+                return auto_win
+        
+        if len(list(black_4.keys())) > 0:
+            auto_block = list(black_4.keys())
+            return auto_block
+        if len(black_3) != 0: 
+            if (max(black_3.items(), key=operator.itemgetter(1))[1] >= 5):
+                auto_block = [max(black_3.items(), key=operator.itemgetter(1))[0]]
+                return auto_block
+        if len(black_2) != 0: 
+            if (max(black_2.items(), key=operator.itemgetter(1))[1] >= 5):
+                auto_block = [max(black_2.items(), key=operator.itemgetter(1))[0]]
+                return auto_block
+
+        ordered_moves += list(white_3.keys())
+
+        ordered_moves += list(set(list(white_2.keys()))-set(ordered_moves))
+
+        ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
+
+        return ordered_moves
+    
+
 
 
 ####################################################################################################

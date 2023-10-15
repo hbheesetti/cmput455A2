@@ -12,6 +12,7 @@ The board uses a 1-dimensional representation with padding
 """
 
 import numpy as np
+import operator
 from typing import List, Tuple
 
 from board_base import (
@@ -560,7 +561,7 @@ class GoBoard(object):
         Returns BLACK or WHITE if any five in a row is detected for the color
         EMPTY otherwise.
         """
-        print("Entered detect_n_in_a_row")
+        #print("Entered detect_n_in_a_row")
         all_n = {1: None, 2: None, 3: None}
         counter = 0
         black_moves = []
@@ -632,6 +633,11 @@ class GoBoard(object):
                 # white_moves += list(set(w)-set(white_moves))
                 # black_moves += list(set(b)-set(black_moves))
                 #return result
+
+        
+
+        
+        return bd, wd
         #print("WHITE:", wd)
         #print("BLACK:", bd)
         #print(all_n[1], all_n[2], all_n[3])
@@ -694,7 +700,7 @@ class GoBoard(object):
                 if potential_empty >= 0:
                     #print("Success, the empty space is index", potential_empty)
                     prev_empty_val = list[potential_empty]
-                    print(prev_empty_val)
+                    #print(prev_empty_val)
                     if self.get_color(prev_empty_val) == 0:
                         if self.get_color(set[0]) == 1:
                             #print('black')
