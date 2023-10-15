@@ -545,6 +545,8 @@ class GoBoard(object):
         all_n = {1: None, 2: None, 3: None}
         counter = 0
         black_moves = []
+        bd = {}
+        wd = {}
         white_moves = []
         for r in self.rows:
             result, b, w = self.has_n_in_list(r, n)
@@ -553,8 +555,19 @@ class GoBoard(object):
                     all_n[1] = result
                 else:
                     all_n[1].append(result)
-                white_moves +=  w
-                black_moves += b
+                
+                for val in w:
+                    if val in wd:
+                        wd[val] += 1
+                    else:
+                        wd[val] = 1
+                for val in b:
+                    if val in bd:
+                        bd[val] += 1
+                    else:
+                        bd[val] = 1
+                # white_moves += list(set(w)-set(white_moves))
+                # black_moves += list(set(b)-set(black_moves))
                 counter += 1
                 #return result
         for c in self.cols:
@@ -565,8 +578,18 @@ class GoBoard(object):
                 else:
                     all_n[2].append(result)
                 counter += 1
-                white_moves +=  w
-                black_moves += b
+                for val in w:
+                    if val in wd:
+                        wd[val] += 1
+                    else:
+                        wd[val] = 1
+                for val in b:
+                    if val in bd:
+                        bd[val] += 1
+                    else:
+                        bd[val] = 1
+                # white_moves += list(set(w)-set(white_moves))
+                # black_moves += list(set(b)-set(black_moves))
                 #return result
         for d in self.diags:
             result, b, w = self.has_n_in_list(d, n)
@@ -577,11 +600,21 @@ class GoBoard(object):
                 else:
                     all_n[3].append(result)
                 counter += 1
-                white_moves +=  w
-                black_moves += b
+                for val in w:
+                    if val in wd:
+                        wd[val] += 1
+                    else:
+                        wd[val] = 1
+                for val in b:
+                    if val in bd:
+                        bd[val] += 1
+                    else:
+                        bd[val] = 1
+                # white_moves += list(set(w)-set(white_moves))
+                # black_moves += list(set(b)-set(black_moves))
                 #return result
-        print("WHITE:", white_moves)
-        print("BLACK:", black_moves)
+        print("WHITE:", wd)
+        print("BLACK:", bd)
         print(all_n[1], all_n[2], all_n[3])
         print("Done detect_n_in_a_row")
         #return EMPTY
@@ -622,7 +655,7 @@ class GoBoard(object):
             # if self.get_color(stone) == 0:
             #     set.append(stone)
             if self.get_color(stone) == prev and self.get_color(stone) != 0:
-                if self.get_color(stone) == 2:
+                #if self.get_color(stone) == 2:
                     #print('match')
                 if set.count(prev) == 0:
                     set.append(prev_stone)
