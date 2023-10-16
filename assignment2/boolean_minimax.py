@@ -17,6 +17,9 @@ import operator
 from board_base import coord_to_point
 INFINITY = 100000000000
 seen_states = {}
+import cProfile, pstats
+from hasher import ZobristHash
+from tt import TT
 
 # def minimaxBooleanOR(board: GoBoard):
 #     # print("lastmove",board.last_move)
@@ -82,33 +85,32 @@ def handler(signum, frame):
 
 def callAlphabeta(rootState: GoBoard, timelimit):
     copyboard = rootState.copy()
-    # x = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
-    #print(GoBoardUtil.get_twoD_board(copyboard))
-    signal.signal(signal.SIGALRM, handler) 
-    signal.alarm(int(timelimit))
-    try:
-        result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
-    except TimeoutError as exc:
-        print("timedout")
-        result = "unknown"
-    finally:
-        signal.alarm(0)
+    hasher = ZobristHash(rootState.size)
+    tt = TT()
 
+    ###### Test without time limit code #####
+    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
+    #print(GoBoardUtil.get_twoD_board(copyboard))
+
+    ###### This is the profiling code ######
+    profiler = cProfile.Profile()
+    profiler.enable()
+    result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('ncalls')
+    stats.print_stats()
+    ###### This is the final submission code #####
+    # signal.signal(signal.SIGALRM, handler) 
+    # signal.alarm(int(timelimit))
+    # try:
+    #     result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
+    # except TimeoutError as exc:
+    #     print("timedout")
+    #     result = "unknown"
+    # finally:
+    #     signal.alarm(0)
     return result
 
-def alphabeta(board: GoBoard,copy, alpha, beta, depth):
-    result = (0,0)
-    if copy.end_of_game():
-        result = (copy.staticallyEvaluateForToPlay(), None)
-        return result
-
-    # when we have a move ordering function, add an if statement to check depth = 0 
-    # if yes use the move ordering function else use the board.legalmoves
-    moves = order_moves(copy)
-    move = moves[0]
-    #skipped_moves = []
-    # print(moves)
-    
     # faulty hash (just in case)
     """ list = GoBoardUtil.get_twoD_board(copy)
     exp = 0
@@ -128,15 +130,30 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
             return  result,None
     seen_states[code] = (-2*INFINITY,0)
     """
+
+def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHash):
+    l = GoBoardUtil.get_twoD_board(copy)
+    code = hasher.hash(l.flatten())
+    result = tt.lookup(code)
+
+    if result != None:
+        return result
+
+    if copy.end_of_game():
+        result = (copy.staticallyEvaluateForToPlay(), None)
+        tt.store(code, result)
+        return result
+
+    # when we have a move ordering function, add an if statement to check depth = 0 
+    # if yes use the move ordering function else use the board.legalmoves
+    moves = copy.legal_moves()
+    move = moves[0]
+    
     for m in moves:
-        #move = m
-        #print(point_to_coord(move, copy.size))
         if depth == 0:
-            #print(GoBoardUtil.get_twoD_board(copy))
             copy = board.copy()
         _,cap = copy.play_move(m, copy.current_player)
-        #print(GoBoardUtil.get_twoD_board(copy))
-        value,_ = alphabeta(board, copy, -beta, -alpha,depth+1)
+        value,_ = alphabeta(board, copy, -beta, -alpha,depth+1, tt, hasher)
         value = -value
         if value > alpha:
             alpha = value
@@ -144,11 +161,12 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
         copy.undo_move(m,cap)
         #seen_states[code] = (value, copy.current_player)
         if alpha >= beta:
-            #move = m
             result = (beta, point_to_coord(move, copy.size))
+            tt.store(code, result)
             return result
 
     result = (alpha, point_to_coord(move, copy.size))
+    tt.store(code, result)
     return result
 
 def order_moves(board: GoBoard):

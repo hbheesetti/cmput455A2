@@ -446,8 +446,27 @@ class GoBoard(object):
         elif self.detect_five_in_a_row() == opponent(self.current_player) or opp_captures == 10:
             score = -100000000000
         elif self.detect_five_in_a_row() == EMPTY:
-            score = 0
+            score = self.getHeuristicScore()
             
+        return score
+    
+    def getHeuristicScore(self):
+        score = 0
+        opp = opponent(self.current_player)
+        lines = self.rows + self.cols + self.diags
+        for line in lines:
+            for i in range(len(line) - 5):
+                currentPlayerCount = 0
+                opponentCount = 0
+                # count the number of stones on each five-line
+                for p in line[i:i + 5]:
+                    if self.board[p] == self.current_player:
+                        currentPlayerCount += 1
+                    elif self.board[p] == opp:
+                        opponentCount += 1
+                # Is blocked
+                if currentPlayerCount < 1 or opponentCount < 1:
+                    score += 10 ** currentPlayerCount - 10 ** opponentCount
         return score
 
     
