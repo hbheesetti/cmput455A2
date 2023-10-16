@@ -14,6 +14,7 @@ from board_util import GoBoardUtil
 from typing import Any, Callable, Dict, List, Tuple
 import math
 import operator
+import sys
 from board_base import coord_to_point
 INFINITY = 100000000000
 seen_states = {}
@@ -84,15 +85,16 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     copyboard = rootState.copy()
     # x = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
     #print(GoBoardUtil.get_twoD_board(copyboard))
-    signal.signal(signal.SIGALRM, handler) 
-    signal.alarm(int(timelimit))
-    try:
-        result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
-    except TimeoutError as exc:
-        print("timedout")
-        result = "unknown"
-    finally:
-        signal.alarm(0)
+    #signal.signal(signal.SIGALRM, handler) 
+    #signal.alarm(int(timelimit))
+    #try:
+    sys.setrecursionlimit(1500)
+    result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
+    #except TimeoutError as exc:
+        #print("timedout")
+        #result = "unknown"
+    #finally:
+        #signal.alarm(0)
 
     return result
 
@@ -104,7 +106,17 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth):
 
     # when we have a move ordering function, add an if statement to check depth = 0 
     # if yes use the move ordering function else use the board.legalmoves
-    moves = order_moves(copy)
+    #moves = copy.legal_moves()
+    #moves = order_moves(copy)
+    #move = moves[0]
+    moves = copy.move_order(copy.current_player)
+    if("win" in moves):
+        moves = list(moves.values())
+    else:
+        #print("search")
+        moves = list(dict(sorted(moves.items(), key=operator.itemgetter(1))).values())
+        moves.reverse()
+        moves = moves + list(set(copy.legal_moves()) - set(moves))
     move = moves[0]
     #skipped_moves = []
     # print(moves)

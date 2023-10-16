@@ -722,6 +722,116 @@ class GoBoard(object):
             return EMPTY, black_moves, white_moves
         
 
+    def move_order(self,color:GO_COLOR):
+        rows = self.rows
+        cols = self.cols
+        diags = self.diags
+        moves = {}
+        #print(type(moves))
+
+        moves = self.count_connections(moves,rows,color)
+        if("win" in moves):
+            return moves
+        moves = self.count_connections(moves,cols,color)
+        if("win" in moves):
+            return moves
+        moves = self.count_connections(moves,diags,color)
+        if("win" in moves):
+            return moves
+        return moves
+
+    def count_connections(self, moves:dict, rowColDiag, color):
+        for row in rowColDiag:
+            left_count = 0
+            right_count = 0
+            found_color = EMPTY
+            curr_pos = None
+            swap = False
+            i = 0
+
+            while i < len(row):
+                if(self.get_color(row[i]) != EMPTY):
+                    found_color = self.get_color(row[i])
+                    if(i != 0):
+                        curr_pos = row[i-1]
+                        right_count = 1
+                        i+=1
+                    else:
+                        left_count = 1
+                        i+=1
+                    break
+                i+=1
+            while i < len(row):
+                next_color = self.get_color(row[i]) 
+                if(next_color == found_color):
+                    if(curr_pos != None):
+                        right_count+=1
+                    else:
+                        left_count+=1
+                elif(next_color == opponent(found_color)):
+                        if(curr_pos != None):
+                            if(left_count + right_count >= 4): # found an empty space that connects into a group of 5
+                                win_or_block = {}
+                                win_or_block ["win"] = curr_pos
+                                return win_or_block
+                            
+                            if(right_count == 1 and left_count == 0): # move would let opponent capture
+                                score = -100000
+                                swap = True
+
+                            else:
+                                score = left_count + right_count
+                                score = score*score
+                                if(found_color == color): # give an advantage to moves joining blocks of our color
+                                    score += 0.1
+
+                            if(curr_pos in moves):
+                                moves[curr_pos] = moves[curr_pos] + score 
+                            else:
+                                moves[curr_pos] = score
+                        left_count = 1
+                        right_count = 0
+                        found_color = next_color
+                        curr_pos = None
+                else:
+                    if(curr_pos != None):
+                        score = left_count + right_count
+
+                        if(score >= 4): # found an empty space that connects into a group of 5
+                            win_or_block = {}
+                            win_or_block["win"] = curr_pos
+                            return win_or_block
+
+                        if(swap and left_count == 1):
+                            score = -100000
+                            swap = False
+                        else:
+                            score = score*score
+                            if(found_color == color): # give an advantage to moves joining blocks of our color
+                                score += 0.1
+
+                        if(curr_pos in moves):
+                            moves[curr_pos] = moves[curr_pos] + score 
+                        else:
+                            moves[curr_pos] = score
+                    curr_pos = row[i]
+
+                    if(i == len(row)-1): # add empty space at end
+                        score = left_count
+                        if(score >= 4): # found an empty space that connects into a group of 5
+                            win_or_block = {}
+                            win_or_block["win"] = curr_pos
+                            return win_or_block
+                        score = score*score
+                        if(curr_pos in moves):
+                            moves[curr_pos] = moves[curr_pos] + score 
+                        else:
+                            moves[curr_pos] = score
+                    left_count = right_count
+                    right_count = 0
+                i+=1
+            
+        return moves
 
 '''
 DELETE LATER
@@ -779,4 +889,6 @@ DELETE LATER
 #     if not (col <= board_size and row <= board_size):
 #         raise ValueError("wrong coordinate")
 #     return coord_to_point(row, col,board_size)
+
+    
 
