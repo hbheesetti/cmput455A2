@@ -161,18 +161,22 @@ def order_moves(board: GoBoard):
 
     black_2, white_2 = board.detect_n_in_a_row(2)
 
+    #black_1, white_1 = board.detect_n_in_a_row(1)
+
     if cur_play == BLACK:
-        if len(list(black_4.keys())) > 0:
-            auto_win = list(black_4.keys())
-            return auto_win
-        if len(black_3) != 0:
-            if (max(black_3.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_win = [max(black_3.items(), key=operator.itemgetter(1))[0]]
-                return auto_win
-        if len(black_2) != 0:
-            if (max(black_2.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_win = [max(black_2.items(), key=operator.itemgetter(1))[0]]
-                return auto_win
+        # if len(list(black_4.keys())) > 0:
+        #     auto_win = list(black_4.keys())
+        #     return auto_win
+        # black_3, white_3 = board.detect_n_in_a_row(3)
+        # if len(black_3) != 0:
+        #     if (max(black_3.items(), key=operator.itemgetter(1))[1] >= 5):
+        #         auto_win = [max(black_3.items(), key=operator.itemgetter(1))[0]]
+        #         return auto_win
+        # black_2, white_2 = board.detect_n_in_a_row(2)
+        # if len(black_2) != 0:
+        #     if (max(black_2.items(), key=operator.itemgetter(1))[1] >= 5):
+        #         auto_win = [max(black_2.items(), key=operator.itemgetter(1))[0]]
+        #         return auto_win
         
         if len(list(white_4.keys())) > 0:
             auto_block = list(white_4.keys())
@@ -185,27 +189,38 @@ def order_moves(board: GoBoard):
             if (max(white_2.items(), key=operator.itemgetter(1))[1] >= 5):
                 auto_block = [max(white_2.items(), key=operator.itemgetter(1))[0]]
                 return auto_block
+        # priority = []
+        # if len(black_1) != 0: 
+        #     make_2_plus = max(black_1.items(), key=operator.itemgetter(1))[1]
+        #     while make_2_plus >= 5:
+        #         priority.append([max(black_1.items(), key=operator.itemgetter(1))[0]])
+        #         black_1.pop(make_2_plus)
+        #         make_2_plus = max(black_1.items(), key=operator.itemgetter(1))[1]
 
         ordered_moves += list(black_3.keys())
 
         ordered_moves += list(set(list(black_2.keys()))-set(ordered_moves))
+
+        #ordered_moves += list(set(priority)-set(ordered_moves))
 
         ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
 
         return ordered_moves
     
     else:
-        if len(list(white_4.keys())) > 0:
-            auto_win = list(white_4.keys())
-            return auto_win
-        if len(white_3) != 0: 
-            if (max(white_3.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_win = [max(white_3.items(), key=operator.itemgetter(1))[0]]
-                return auto_win
-        if len(white_2) != 0: 
-            if (max(white_2.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_win = [max(white_2.items(), key=operator.itemgetter(1))[0]]
-                return auto_win
+        # if len(list(white_4.keys())) > 0:
+        #     auto_win = list(white_4.keys())
+        #     return auto_win
+        # black_3, white_3 = board.detect_n_in_a_row(3)
+        # if len(white_3) != 0: 
+        #     if (max(white_3.items(), key=operator.itemgetter(1))[1] >= 5):
+        #         auto_win = [max(white_3.items(), key=operator.itemgetter(1))[0]]
+        #         return auto_win
+        # black_2, white_2 = board.detect_n_in_a_row(2)
+        # if len(white_2) != 0: 
+        #     if (max(white_2.items(), key=operator.itemgetter(1))[1] >= 5):
+        #         auto_win = [max(white_2.items(), key=operator.itemgetter(1))[0]]
+        #         return auto_win
         
         if len(list(black_4.keys())) > 0:
             auto_block = list(black_4.keys())
@@ -219,9 +234,19 @@ def order_moves(board: GoBoard):
                 auto_block = [max(black_2.items(), key=operator.itemgetter(1))[0]]
                 return auto_block
 
+        # priority = []
+        # if len(white_1) != 0: 
+        #     make_2_plus = max(white_1.items(), key=operator.itemgetter(1))[1]
+        #     while make_2_plus >= 5:
+        #         priority.append([max(white_1.items(), key=operator.itemgetter(1))[0]])
+        #         white_1.pop(make_2_plus)
+        #         make_2_plus = max(white_1.items(), key=operator.itemgetter(1))[1]
+
         ordered_moves += list(white_3.keys())
 
         ordered_moves += list(set(list(white_2.keys()))-set(ordered_moves))
+
+        #ordered_moves += list(set(priority)-set(ordered_moves))
 
         ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
 

@@ -339,7 +339,7 @@ class GoBoard(object):
             self.capture_stack.append(capturesList)
         # print(True, capture)
         #print(self.check_neighbours(point))
-        self.detect_n_in_a_row(2)
+        self.detect_n_in_a_row(4)
         
         return True, capture
     
@@ -564,79 +564,140 @@ class GoBoard(object):
         #print("Entered detect_n_in_a_row")
         all_n = {1: None, 2: None, 3: None}
         counter = 0
-        black_moves = []
         bd = {}
         wd = {}
-        white_moves = []
+        w2 = {}
+        b2 = {}
+        w3 = {}
+        b3 = {}
         for r in self.rows:
-            result, b, w = self.has_n_in_list(r, n)
-            if result != EMPTY:
-                if all_n[1] == None:
-                    all_n[1] = result
+            result, b, w, w_2, b_2, w_3, b_3 = self.has_n_in_list(r, n)
+            #if result != EMPTY:
+            if all_n[1] == None and result != EMPTY:
+                all_n[1] = result
+            elif result != EMPTY:
+                all_n[1].append(result)
+            
+            for val in w:
+                if val in wd:
+                    wd[val] += 1
                 else:
-                    all_n[1].append(result)
-                
-                for val in w:
-                    if val in wd:
-                        wd[val] += 1
-                    else:
-                        wd[val] = 1
-                for val in b:
-                    if val in bd:
-                        bd[val] += 1
-                    else:
-                        bd[val] = 1
+                    wd[val] = 1
+            for val in b:
+                if val in bd:
+                    bd[val] += 1
+                else:
+                    bd[val] = 1
+            for val in w_2:
+                if val in w2:
+                    w2[val] += 1
+                else:
+                    w2[val] = 1
+            for val in b_2:
+                if val in b2:
+                    b2[val] += 1
+                else:
+                    b2[val] = 1
+            for val in w_3:
+                if val in w3:
+                    w3[val] += 1
+                else:
+                    w3[val] = 1
+            for val in b_3:
+                if val in b3:
+                    b3[val] += 1
+                else:
+                    b3[val] = 1
                 # white_moves += list(set(w)-set(white_moves))
                 # black_moves += list(set(b)-set(black_moves))
                 counter += 1
                 #return result
         for c in self.cols:
-            result, b, w = self.has_n_in_list(c, n)
-            if result != EMPTY:
-                if all_n[2] == None:
-                        all_n[2] = result
+            result, b, w, w_2, b_2, w_3, b_3 = self.has_n_in_list(c, n)
+            #if result != EMPTY:
+            if all_n[2] == None and result != EMPTY:
+                all_n[2] = result
+            elif result != EMPTY:
+                all_n[2].append(result)
+            counter += 1
+            for val in w:
+                if val in wd:
+                    wd[val] += 1
                 else:
-                    all_n[2].append(result)
-                counter += 1
-                for val in w:
-                    if val in wd:
-                        wd[val] += 1
-                    else:
-                        wd[val] = 1
-                for val in b:
-                    if val in bd:
-                        bd[val] += 1
-                    else:
-                        bd[val] = 1
+                    wd[val] = 1
+            for val in b:
+                if val in bd:
+                    bd[val] += 1
+                else:
+                    bd[val] = 1
+            for val in w_2:
+                if val in w2:
+                    w2[val] += 1
+                else:
+                    w2[val] = 1
+            for val in b_2:
+                if val in b2:
+                    b2[val] += 1
+                else:
+                    b2[val] = 1
+            for val in w_3:
+                if val in w3:
+                    w3[val] += 1
+                else:
+                    w3[val] = 1
+            for val in b_3:
+                if val in b3:
+                    b3[val] += 1
+                else:
+                    b3[val] = 1
                 # white_moves += list(set(w)-set(white_moves))
                 # black_moves += list(set(b)-set(black_moves))
                 #return result
         for d in self.diags:
-            result, b, w = self.has_n_in_list(d, n)
-            if result != EMPTY:
-                if all_n[3] == None:
-                        all_n[3] = result
-
+            result, b, w, w_2, b_2, w_3, b_3 = self.has_n_in_list(d, n)
+            #if result != EMPTY:
+            if all_n[3] == None and result != EMPTY:
+                all_n[3] = result
+            elif result != EMPTY:
+                all_n[3].append(result)
+            counter += 1
+            for val in w:
+                if val in wd:
+                    wd[val] += 1
                 else:
-                    all_n[3].append(result)
-                counter += 1
-                for val in w:
-                    if val in wd:
-                        wd[val] += 1
-                    else:
-                        wd[val] = 1
-                for val in b:
-                    if val in bd:
-                        bd[val] += 1
-                    else:
-                        bd[val] = 1
+                    wd[val] = 1
+            for val in b:
+                if val in bd:
+                    bd[val] += 1
+                else:
+                    bd[val] = 1
+            for val in w_2:
+                if val in w2:
+                    w2[val] += 1
+                else:
+                    w2[val] = 1
+            for val in b_2:
+                if val in b2:
+                    b2[val] += 1
+                else:
+                    b2[val] = 1
+            for val in w_3:
+                if val in w3:
+                    w3[val] += 1
+                else:
+                    w3[val] = 1
+            for val in b_3:
+                if val in b3:
+                    b3[val] += 1
+                else:
+                    b3[val] = 1
                 # white_moves += list(set(w)-set(white_moves))
                 # black_moves += list(set(b)-set(black_moves))
                 #return result
 
         
 
-        
+        print(w2,"\n", b2,"\n", w3,"\n", b3)
         return bd, wd
         #print("WHITE:", wd)
         #print("BLACK:", bd)
@@ -655,40 +716,85 @@ class GoBoard(object):
         all = []
         white_moves = []
         black_moves = []
+
+        white_2 = []
+        black_2 = []
+        white_3 = []
+        black_3 = []
+        white_4 = []
+        black_4 = []
+        
         prev_stone = None
         # empties = []
-        
+        #print("enter")
+        # if n == 1:
+        #     print("enter")
+        #     for stone in list:
+        #         print("enter")
+        #         s_color = self.get_color(stone)
+        #         print("got color", s_color)
+                
+        #         if s_color != self.get_color(prev_stone) and s_color != 0:
+                    
+        #             set.append(stone)
+        #         if s_color == 0 and prev_stone != None and prev_stone in set:
+        #             print('there is an empty space by this stone')
+        #         else:
+        #             set = []
+        #             counter = 1
+        #             prev = self.get_color(stone)
+        #             prev_stone = stone
+
+        #else:
         for stone in list:
+            
+
             if prev_stone == None:
                 prev_stone = stone
 
-            #print("STONE", stone)
             if self.get_color(stone) == 0 :
-                
                 if prev_stone in set:
-                    #print("Stone is empty and prev in set")
                     if self.get_color(set[0]) == 1:
-                        #print('black')
                         black_moves.append(stone)
                     elif self.get_color(set[0]) == 2:
-                        #print('white')
                         white_moves.append(stone)
-                        #print(white_moves)
-                # else:
-                #     empties.append(stone)
-                
-            # if self.get_color(stone) == 0:
-            #     set.append(stone)
             if self.get_color(stone) == prev and self.get_color(stone) != 0:
-                #if self.get_color(stone) == 2:
-                    #print('match')
                 if set.count(prev) == 0:
                     set.append(prev_stone)
                     
+                    
                 set.append(stone)
                 counter += 1
-                
             else:
+                if counter == 2:
+                    potential_e = int(list.index(set[-1])-2)
+                    if self.get_color(set[0]) == 2:
+                        if self.get_color(stone) == 0:
+                            white_2.append(stone)
+                        if potential_e >= 0:
+                            if self.get_color(list[potential_e]) == 0:
+                                white_2.append(list[potential_e])
+                    else:
+                        if self.get_color(stone) == 0:
+                            black_2.append(stone)
+                        if potential_e >= 0:
+                            if self.get_color(list[potential_e]) == 0:
+                                black_2.append(list[potential_e])
+                if counter == 3:
+                    potential_e = int(list.index(set[-1])-3)
+                    if self.get_color(set[0]) == 2:
+                        if self.get_color(stone) == 0:
+                            white_3.append(stone)
+                        if potential_e >= 0:
+                            if self.get_color(list[potential_e]) == 0:
+                                white_3.append(list[potential_e])
+                    else:
+                        if self.get_color(stone) == 0:
+                            black_3.append(stone)
+                        if potential_e >= 0:
+                            if self.get_color(list[potential_e]) == 0:
+                                black_3.append(list[potential_e])
+            
                 set = []
                 counter = 1
                 prev = self.get_color(stone)
@@ -696,31 +802,25 @@ class GoBoard(object):
 
             if counter == n and prev != EMPTY and set not in all:
                 potential_empty = int(list.index(set[n-1]) - n)
-                #print("PE", potential_empty)
                 if potential_empty >= 0:
-                    #print("Success, the empty space is index", potential_empty)
                     prev_empty_val = list[potential_empty]
-                    #print(prev_empty_val)
                     if self.get_color(prev_empty_val) == 0:
                         if self.get_color(set[0]) == 1:
-                            #print('black')
                             black_moves.append(prev_empty_val)
                         elif self.get_color(set[0]) == 2:
-                            #print('white')
                             white_moves.append(prev_empty_val)
-                            #print(white_moves)
+                
                 all.append(set)
-                #print(all)
-                #return prev
-        
+        if len(white_2) > 0 or len(black_2) > 0:
+            print("2, w:", white_2, "b:", black_2)
+            print("3, w:", white_3, "b:", black_3)
+            print("4, w:", white_4, "b:", black_4)
         
         if len(all) != 0:
-            #print("ALL", all)
-            #print("WHITE", white_moves)
-            return all, black_moves, white_moves
+            return all, black_moves, white_moves, white_2, black_2, white_3, black_3
         else:
-            return EMPTY, black_moves, white_moves
-        
+            return EMPTY, black_moves, white_moves, white_2, black_2, white_3, black_3
+    
 
 
 '''
