@@ -339,7 +339,6 @@ class GoBoard(object):
             self.capture_stack.append(capturesList)
         # print(True, capture)
         #print(self.check_neighbours(point))
-        self.detect_n_in_a_row(2)
         
         return True, capture
     
@@ -571,98 +570,27 @@ class GoBoard(object):
                     find_all = False
         
         return [NS, EW, NWSE, NESW] 
-            
     
-    
-
-    def detect_n_in_a_row(self, n) -> GO_COLOR:
-        """
-        Returns BLACK or WHITE if any five in a row is detected for the color
-        EMPTY otherwise.
-        """
-        #print("Entered detect_n_in_a_row")
-        all_n = {1: None, 2: None, 3: None}
-        counter = 0
-        black_moves = []
-        bd = {}
-        wd = {}
-        white_moves = []
+    def detect_n_in_row(self,n):
+        w,b = [],[]
         for r in self.rows:
-            result, b, w = self.has_n_in_list(r, n)
-            if result != EMPTY:
-                if all_n[1] == None:
-                    all_n[1] = result
-                else:
-                    all_n[1].append(result)
-                
-                for val in w:
-                    if val in wd:
-                        wd[val] += 1
-                    else:
-                        wd[val] = 1
-                for val in b:
-                    if val in bd:
-                        bd[val] += 1
-                    else:
-                        bd[val] = 1
-                # white_moves += list(set(w)-set(white_moves))
-                # black_moves += list(set(b)-set(black_moves))
-                counter += 1
-                #return result
+            rows = self.has_n_in_list(r,n)
+            w += rows[0]
+            b += rows[1]
         for c in self.cols:
-            result, b, w = self.has_n_in_list(c, n)
-            if result != EMPTY:
-                if all_n[2] == None:
-                        all_n[2] = result
-                else:
-                    all_n[2].append(result)
-                counter += 1
-                for val in w:
-                    if val in wd:
-                        wd[val] += 1
-                    else:
-                        wd[val] = 1
-                for val in b:
-                    if val in bd:
-                        bd[val] += 1
-                    else:
-                        bd[val] = 1
-                # white_moves += list(set(w)-set(white_moves))
-                # black_moves += list(set(b)-set(black_moves))
-                #return result
+            cols = self.has_n_in_list(c,n)
+            w += cols[0]
+            b += cols[1]
         for d in self.diags:
-            result, b, w = self.has_n_in_list(d, n)
-            if result != EMPTY:
-                if all_n[3] == None:
-                        all_n[3] = result
-
-                else:
-                    all_n[3].append(result)
-                counter += 1
-                for val in w:
-                    if val in wd:
-                        wd[val] += 1
-                    else:
-                        wd[val] = 1
-                for val in b:
-                    if val in bd:
-                        bd[val] += 1
-                    else:
-                        bd[val] = 1
-                # white_moves += list(set(w)-set(white_moves))
-                # black_moves += list(set(b)-set(black_moves))
-                #return result
-
-        
-
-        
-        return bd, wd
-        #print("WHITE:", wd)
-        #print("BLACK:", bd)
-        #print(all_n[1], all_n[2], all_n[3])
-        #print("Done detect_n_in_a_row")
-        #return EMPTY
-
+            diags = self.has_n_in_list(d,n)
+            w += diags[0]
+            b += diags[1]
+        if self.current_player == BLACK:
+            return b+w
+        if self.current_player == WHITE:
+            return w+b
+        return []
+    
     def has_n_in_list(self, list, n) -> GO_COLOR:
         """
         Returns BLACK or WHITE if any five in a rows exist in the list.
@@ -670,132 +598,249 @@ class GoBoard(object):
         """
         prev = BORDER
         counter = 1
-        set = []
-        all = []
-        white_moves = []
-        black_moves = []
-        prev_stone = None
-        # empties = []
-        
-        for stone in list:
-            if prev_stone == None:
-                prev_stone = stone
-
-            #print("STONE", stone)
-            if self.get_color(stone) == 0 :
-                
-                if prev_stone in set:
-                    #print("Stone is empty and prev in set")
-                    if self.get_color(set[0]) == 1:
-                        #print('black')
-                        black_moves.append(stone)
-                    elif self.get_color(set[0]) == 2:
-                        #print('white')
-                        white_moves.append(stone)
-                        #print(white_moves)
-                # else:
-                #     empties.append(stone)
-                
-            # if self.get_color(stone) == 0:
-            #     set.append(stone)
-            if self.get_color(stone) == prev and self.get_color(stone) != 0:
-                #if self.get_color(stone) == 2:
-                    #print('match')
-                if set.count(prev) == 0:
-                    set.append(prev_stone)
-                    
-                set.append(stone)
+        b = []
+        w = []
+        for i in range(len(list)):
+            if self.get_color(list[i]) == prev:
                 counter += 1
-                
             else:
-                set = []
                 counter = 1
-                prev = self.get_color(stone)
-                prev_stone = stone
+                prev = self.get_color(list[i])
+            if counter == n and prev != EMPTY:
+                if (i+1-n) > 0:
+                    if self.get_color(list[i-n]) == EMPTY:
+                        if self.get_color(list[i]) == BLACK:
+                            b.append(list[i-n])
+                        elif self.get_color(list[i]) == WHITE:
+                            w.append(list[i-n])
+                if (i+1) < self.size:
+                    if self.get_color(list[i+1]) == EMPTY:
+                        if self.get_color(list[i]) == BLACK:
+                            b.append(list[i+1])
+                        elif self.get_color(list[i]) == WHITE:
+                            w.append(list[i+1])
+        return [w,b]
 
-            if counter == n and prev != EMPTY and set not in all:
-                potential_empty = int(list.index(set[n-1]) - n)
-                #print("PE", potential_empty)
-                if potential_empty >= 0:
-                    #print("Success, the empty space is index", potential_empty)
-                    prev_empty_val = list[potential_empty]
-                    #print(prev_empty_val)
-                    if self.get_color(prev_empty_val) == 0:
-                        if self.get_color(set[0]) == 1:
-                            #print('black')
-                            black_moves.append(prev_empty_val)
-                        elif self.get_color(set[0]) == 2:
-                            #print('white')
-                            white_moves.append(prev_empty_val)
-                            #print(white_moves)
-                all.append(set)
-                #print(all)
-                #return prev
+    # def detect_n_in_a_row(self, n) -> GO_COLOR:
+    #     """
+    #     Returns BLACK or WHITE if any five in a row is detected for the color
+    #     EMPTY otherwise.
+    #     """
+    #     #print("Entered detect_n_in_a_row")
+    #     all_n = {1: None, 2: None, 3: None}
+    #     counter = 0
+    #     black_moves = []
+    #     bd = {}
+    #     wd = {}
+    #     white_moves = []
+    #     for r in self.rows:
+    #         result, b, w = self.has_n_in_list(r, n)
+    #         if result != EMPTY:
+    #             if all_n[1] == None:
+    #                 all_n[1] = result
+    #             else:
+    #                 all_n[1].append(result)
+                
+    #             for val in w:
+    #                 if val in wd:
+    #                     wd[val] += 1
+    #                 else:
+    #                     wd[val] = 1
+    #             for val in b:
+    #                 if val in bd:
+    #                     bd[val] += 1
+    #                 else:
+    #                     bd[val] = 1
+    #             # white_moves += list(set(w)-set(white_moves))
+    #             # black_moves += list(set(b)-set(black_moves))
+    #             counter += 1
+    #             #return result
+    #     for c in self.cols:
+    #         result, b, w = self.has_n_in_list(c, n)
+    #         if result != EMPTY:
+    #             if all_n[2] == None:
+    #                     all_n[2] = result
+    #             else:
+    #                 all_n[2].append(result)
+    #             counter += 1
+    #             for val in w:
+    #                 if val in wd:
+    #                     wd[val] += 1
+    #                 else:
+    #                     wd[val] = 1
+    #             for val in b:
+    #                 if val in bd:
+    #                     bd[val] += 1
+    #                 else:
+    #                     bd[val] = 1
+    #             # white_moves += list(set(w)-set(white_moves))
+    #             # black_moves += list(set(b)-set(black_moves))
+    #             #return result
+    #     for d in self.diags:
+    #         result, b, w = self.has_n_in_list(d, n)
+    #         if result != EMPTY:
+    #             if all_n[3] == None:
+    #                     all_n[3] = result
+    #             else:
+    #                 all_n[3].append(result)
+    #             counter += 1
+    #             for val in w:
+    #                 if val in wd:
+    #                     wd[val] += 1
+    #                 else:
+    #                     wd[val] = 1
+    #             for val in b:
+    #                 if val in bd:
+    #                     bd[val] += 1
+    #                 else:
+    #                     bd[val] = 1
+    #             # white_moves += list(set(w)-set(white_moves))
+    #             # black_moves += list(set(b)-set(black_moves))
+    #             #return result 
+    #     return wd,bd
+    #     #print("WHITE:", wd)
+    #     #print("BLACK:", bd)
+    #     #print(all_n[1], all_n[2], all_n[3])
+    #     #print("Done detect_n_in_a_row")
+    #     #return EMPTY
+    
+
+    # def has_n_in_list(self, list, n) -> GO_COLOR:
+    #     """
+    #     Returns BLACK or WHITE if any five in a rows exist in the list.
+    #     EMPTY otherwise.
+    #     """
+    #     prev = BORDER
+    #     counter = 1
+    #     set = []
+    #     all = []
+    #     white_moves = []
+    #     black_moves = []
+    #     prev_stone = None
+    #     # empties = []
+        
+    #     for stone in list:
+    #         if prev_stone == None:
+    #             prev_stone = stone
+
+    #         #print("STONE", stone)
+    #         if self.get_color(stone) == 0 :
+                
+    #             if prev_stone in set:
+    #                 #print("Stone is empty and prev in set")
+    #                 if self.get_color(set[0]) == 1:
+    #                     #print('black')
+    #                     black_moves.append(stone)
+    #                 elif self.get_color(set[0]) == 2:
+    #                     #print('white')
+    #                     white_moves.append(stone)
+    #                     #print(white_moves)
+    #             # else:
+    #             #     empties.append(stone)
+                
+    #         # if self.get_color(stone) == 0:
+    #         #     set.append(stone)
+    #         if self.get_color(stone) == prev and self.get_color(stone) != 0:
+    #             #if self.get_color(stone) == 2:
+    #                 #print('match')
+    #             if set.count(prev) == 0:
+    #                 set.append(prev_stone)
+                    
+    #             set.append(stone)
+    #             counter += 1
+                
+    #         else:
+    #             set = []
+    #             counter = 1
+    #             prev = self.get_color(stone)
+    #             prev_stone = stone
+
+    #         if counter == n and prev != EMPTY and set not in all:
+    #             potential_empty = int(list.index(set[n-1]) - n)
+    #             #print("PE", potential_empty)
+    #             if potential_empty >= 0:
+    #                 #print("Success, the empty space is index", potential_empty)
+    #                 prev_empty_val = list[potential_empty]
+    #                 #print(prev_empty_val)
+    #                 if self.get_color(prev_empty_val) == 0:
+    #                     if self.get_color(set[0]) == 1:
+    #                         #print('black')
+    #                         black_moves.append(prev_empty_val)
+    #                     elif self.get_color(set[0]) == 2:
+    #                         #print('white')
+    #                         white_moves.append(prev_empty_val)
+    #                         #print(white_moves)
+    #             all.append(set)
+    #             #print(all)
+    #             #return prev
         
         
-        if len(all) != 0:
-            #print("ALL", all)
-            #print("WHITE", white_moves)
-            return all, black_moves, white_moves
-        else:
-            return EMPTY, black_moves, white_moves
-        
+    #     if len(all) != 0:
+    #         #print("ALL", all)
+    #         #print("WHITE", white_moves)
+    #         return all, black_moves, white_moves
+    #     else:
+    #         return EMPTY, black_moves, white_moves
 
 
 '''
 DELETE LATER
 '''
 
-# def point_to_coord(point: GO_POINT, boardsize: int) -> Tuple[int, int]:
-#     """
-#     Transform point given as board array index 
-#     to (row, col) coordinate representation.
-#     Special case: PASS is transformed to (PASS,PASS)
-#     """
-#     if point == PASS:
-#         return (PASS, PASS)
-#     else:
-#         NS = boardsize + 1
-#         point = divmod(point, NS)
-#         return format_point(point)
+def point_to_coord(point: GO_POINT, boardsize: int) -> Tuple[int, int]:
+    """
+    Transform point given as board array index 
+    to (row, col) coordinate representation.
+    Special case: PASS is transformed to (PASS,PASS)
+    """
+    if point == PASS:
+        return (PASS, PASS)
+    else:
+        NS = boardsize + 1
+        point = divmod(point, NS)
+        return format_point(point)
 
-# def format_point(move: Tuple[int, int]) -> str:
-#     """
-#     Return move coordinates as a string such as 'A1', or 'PASS'.
-#     """
-#     assert MAXSIZE <= 25
-#     column_letters = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
-#     if move[0] == PASS:
-#         return "PASS"
-#     row, col = move
-#     if not 0 <= row < MAXSIZE or not 0 <= col < MAXSIZE:
-#         raise ValueError
-#     return column_letters[col - 1] + str(row)
+def format_point(move: Tuple[int, int]) -> str:
+    """
+    Return move coordinates as a string such as 'A1', or 'PASS'.
+    """
+    assert MAXSIZE <= 25
+    column_letters = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
+    if move[0] == PASS:
+        return "PASS"
+    row, col = move
+    if not 0 <= row < MAXSIZE or not 0 <= col < MAXSIZE:
+        raise ValueError
+    return column_letters[col - 1] + str(row)
 
-# def move_to_coord(point_str: str, board_size: int) -> Tuple[int, int]:
-#     """
-#     Convert a string point_str representing a point, as specified by GTP,
-#     to a pair of coordinates (row, col) in range 1 .. board_size.
-#     Raises ValueError if point_str is invalid
-#     """
-#     if not 2 <= board_size <= MAXSIZE:
-#         raise ValueError("board_size out of range")
-#     s = point_str.lower()
-#     if s == "pass":
-#         return (PASS, PASS)
-#     try:
-#         col_c = s[0]
-#         if (not "a" <= col_c <= "z") or col_c == "i":
-#             raise ValueError
-#         col = ord(col_c) - ord("a")
-#         if col_c < "i":
-#             col += 1
-#         row = int(s[1:])
-#         if row < 1:
-#             raise ValueError
-#     except (IndexError, ValueError):
-#         raise ValueError("wrong coordinate")
-#     if not (col <= board_size and row <= board_size):
-#         raise ValueError("wrong coordinate")
-#     return coord_to_point(row, col,board_size)
+def move_to_coord(point_str: str, board_size: int) -> Tuple[int, int]:
+    """
+    Convert a string point_str representing a point, as specified by GTP,
+    to a pair of coordinates (row, col) in range 1 .. board_size.
+    Raises ValueError if point_str is invalid
+    """
+    if not 2 <= board_size <= MAXSIZE:
+        raise ValueError("board_size out of range")
+    s = point_str.lower()
+    if s == "pass":
+        return (PASS, PASS)
+    try:
+        col_c = s[0]
+        if (not "a" <= col_c <= "z") or col_c == "i":
+            raise ValueError
+        col = ord(col_c) - ord("a")
+        if col_c < "i":
+            col += 1
+        row = int(s[1:])
+        if row < 1:
+            raise ValueError
+    except (IndexError, ValueError):
+        raise ValueError("wrong coordinate")
+    if not (col <= board_size and row <= board_size):
+        raise ValueError("wrong coordinate")
+    return coord_to_point(row, col,board_size)
 
+
+
+def printMoves(list):
+    print (" ".join([point_to_coord(word, 7) for word in list]))

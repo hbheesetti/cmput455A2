@@ -404,7 +404,7 @@ class GtpConnection:
             s = "b"
         elif sol[0] == -100000000000:
             s = "w"
-        self.respond(s)
+        # self.respond(s)
         pass
 
     """

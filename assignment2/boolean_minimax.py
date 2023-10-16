@@ -83,10 +83,16 @@ def handler(signum, frame):
 
     # set the timeout handler
 
+def printMoves(list):
+    print (" ".join([point_to_coord(word, 7) for word in list]))
+
 def callAlphabeta(rootState: GoBoard, timelimit):
     copyboard = rootState.copy()
     hasher = ZobristHash(rootState.size)
     tt = TT()
+    # result = sample(rootState)
+    printMoves(rootState.detect_n_in_row(3))
+    # printMoves(result)
 
     ###### Test without time limit code #####
     # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
@@ -146,7 +152,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
 
     # when we have a move ordering function, add an if statement to check depth = 0 
     # if yes use the move ordering function else use the board.legalmoves
-    moves = copy.legal_moves()
+    moves = sample(copy)
     move = moves[0]
     
     for m in moves:
@@ -168,6 +174,13 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
     result = (alpha, point_to_coord(move, copy.size))
     tt.store(code, result)
     return result
+
+def sample(board:GoBoard):
+    four = board.detect_n_in_row(4)
+    three = board.detect_n_in_row(3)
+    ordered_moves = four+three
+    ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
+    return ordered_moves
 
 def order_moves(board: GoBoard):
     cur_play = board.current_player
@@ -205,11 +218,11 @@ def order_moves(board: GoBoard):
                 return auto_block
 
         ordered_moves += list(black_3.keys())
-
+        # printMoves(ordered_moves)
         ordered_moves += list(set(list(black_2.keys()))-set(ordered_moves))
-
+        # printMoves(ordered_moves)
         ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
-
+        # printMoves(ordered_moves)
         return ordered_moves
     
     else:
