@@ -405,12 +405,12 @@ class GtpConnection:
             s = "draw "+ str(sol[1]).lower()
         if(self.board.current_player == BLACK):
             if sol[0] == 100000000000:
-                s = "b" + str(sol[1]).lower()
+                s = "b " + str(sol[1]).lower()
             elif sol[0] == -100000000000:
                 s = "w"
         else:
             if sol[0] == 100000000000:
-                s = "w" + str(sol[1]).lower()
+                s = "w " + str(sol[1]).lower()
             elif sol[0] == -100000000000:
                 s = "b"
         self.respond(s)
