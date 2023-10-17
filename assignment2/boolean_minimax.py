@@ -83,15 +83,15 @@ def handler(signum, frame):
 
     # set the timeout handler
 
-def printMoves(list):
-    print (" ".join([point_to_coord(word, 7) for word in list]))
+def printMoves(list,board:GoBoard):
+    print (" ".join([point_to_coord(word, board.size) for word in list]))
 
 def callAlphabeta(rootState: GoBoard, timelimit):
     copyboard = rootState.copy()
     hasher = ZobristHash(rootState.size)
     tt = TT()
     # result = sample(rootState)
-    printMoves(sample(rootState))
+    printMoves(sample(rootState),rootState)
     # printMoves(result)
     retult = []
 
@@ -116,7 +116,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     #     result = "unknown"
     # finally:
     #     signal.alarm(0)
-    return []
+    return alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
 
     # faulty hash (just in case)
     """ list = GoBoardUtil.get_twoD_board(copy)
@@ -139,16 +139,16 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     """
 
 def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHash):
-    l = GoBoardUtil.get_twoD_board(copy)
-    code = hasher.hash(l.flatten())
-    result = tt.lookup(code)
+    #l = GoBoardUtil.get_twoD_board(copy)
+    #code = hasher.hash(l.flatten())
+    '''result = tt.lookup(code)
 
     if result != None:
         return result
-
+    '''
     if copy.end_of_game():
         result = (copy.staticallyEvaluateForToPlay(), None)
-        tt.store(code, result)
+        #tt.store(code, result)
         return result
 
     # when we have a move ordering function, add an if statement to check depth = 0 
@@ -169,18 +169,19 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
         #seen_states[code] = (value, copy.current_player)
         if alpha >= beta:
             result = (beta, point_to_coord(move, copy.size))
-            tt.store(code, result)
+            #tt.store(code, result)
             return result
 
     result = (alpha, point_to_coord(move, copy.size))
-    tt.store(code, result)
+    #tt.store(code, result)
     return result
 
 def sample(board:GoBoard):
+    five = board.detect_n_in_row(5)
     four = board.detect_n_in_row(4)
     three = board.detect_n_in_row(3)
-    ordered_moves = four+three
-    # ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
+    ordered_moves = list(dict.fromkeys(five+four+three))
+    ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
     return ordered_moves
 
 def order_moves(board: GoBoard):

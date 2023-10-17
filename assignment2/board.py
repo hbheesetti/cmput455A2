@@ -586,9 +586,9 @@ class GoBoard(object):
             w += diags[0]
             b += diags[1]
         if self.current_player == BLACK:
-            return b+w
+            return b+list((set(w)-set(b)))
         if self.current_player == WHITE:
-            return w+b
+            return w+list((set(b)-set(w)))
         return []
     
     def has_n_in_list(self, list, n) -> GO_COLOR:
@@ -598,15 +598,43 @@ class GoBoard(object):
         """
         prev = BORDER
         counter = 1
+        empty = 0
+        gap = 0
         b = []
         w = []
         for i in range(len(list)):
             if self.get_color(list[i]) == prev:
                 counter += 1
+            elif(empty == 0 and self.get_color(list[i]) == EMPTY):
+                empty = i
+                gap = counter
             else:
+                empty = 0
+                gap = 0
                 counter = 1
                 prev = self.get_color(list[i])
-            if counter == n-1 and prev != EMPTY:
+            if(counter == n-1):
+                if(self.get_color(list[i]) == BLACK):
+                    if(empty > 0):
+                        b.append(list[empty])
+                        empty = 0 # reset empty and subtract the gap from the counter
+                        counter = counter - gap
+                    else:
+                        if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                            b.append(list[i+1])
+                        if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                            b.append(list[i-n])
+                elif(self.get_color(list[i]) == WHITE):
+                    if(empty > 0):
+                        w.append(list[empty])
+                        empty = 0 # reset empty and subtract the gap from the counter
+                        counter = counter - gap
+                    else:
+                        if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                            w.append(list[i+1])
+                        if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                            w.append(list[i-n])
+            '''if counter == n-1 and prev != EMPTY:
                 # This is working for 3,4 in a row
                 ##################################################
                 # if (i+1-n) > 0:
@@ -650,7 +678,7 @@ class GoBoard(object):
                         if self.get_color(list[i]) == BLACK:
                             b.append(list[i+1])
                         elif self.get_color(list[i]) == WHITE:
-                            w.append(list[i+1])
+                            w.append(list[i+1])'''
         return [w,b]
 
     # def detect_n_in_a_row(self, n) -> GO_COLOR:
