@@ -15,6 +15,7 @@ import numpy as np
 import operator
 from typing import List, Tuple
 
+
 from board_base import (
     board_array_size,
     coord_to_point,
@@ -329,7 +330,6 @@ class GoBoard(object):
                 capture = True
                 capturesList.append(point+offset)
                 capturesList.append(point+(offset*2))
-                # print(self.capture_stack)
                 if color == BLACK:
                     self.black_captures += 2
                 else:
@@ -337,8 +337,6 @@ class GoBoard(object):
         if(len(capturesList) > 0):
             capturesList.append(O)
             self.capture_stack.append(capturesList)
-        # print(True, capture)
-        #print(self.check_neighbours(point))
         
         return True, capture
     
@@ -412,7 +410,6 @@ class GoBoard(object):
     def undo_move(self, point, capture):
         # undo captures and capture counts
         if capture:
-            # print(self.capture_stack, ()"undo", capture)
             cap = self.capture_stack.pop(len(self.capture_stack)-1)
             color = cap[len(cap)-1]
             for i in range(len(cap)-1) :
@@ -468,27 +465,6 @@ class GoBoard(object):
                     score += 10 ** currentPlayerCount - 10 ** opponentCount
         return score
 
-    
-    def generate_score(self, move):
-        '''
-        Need to generate scores to prioritize moves over one another in Alphabeta search.
-        ORDER:
-        1. A win, either 5 in a row or captured score == 10. POINTS: 5
-        2. 4 in a row. POINTS: 4
-        3. 3 in a row. POINTS: 3
-        4. 2 in a row. POINTS: 2
-
-        Other cases to consider:
-        - Blocking an apponents 5 in a row should be more than a 4 in a row but less than a win. (maybe 4.5 points?)
-        - A capture could be worth the same as 3 in a row? (Can change this in the future.)
-
-        '''
-        best_score = 0
-
-        total_rows_list = self.in_row_count(self.rows)
-
-        if self.detect_five_in_a_row():
-            best_score = 5
 
     def check_neighbours(self, point):
         '''
@@ -507,17 +483,11 @@ class GoBoard(object):
         EW = 1
         NWSE = 1
         NESW = 1
-        #print(self.get_color(point))
-        #print(point)
         direction = 'diagonal'
-        # for nb in nb_list:
-        #     print(nb)
-        #     print(self.get_color(nb))
 
         if direction == 'diagonal':
             find_all = True
             while find_all:
-                print("finding diagonal")
                 
                 if self.get_color(nb_list[4]) == self.get_color(point):
                     NESW += 1
@@ -543,7 +513,6 @@ class GoBoard(object):
         if direction == 'horizontal':
             find_all = True
             while find_all:
-                print("finding horizontal")
                 if self.get_color(nb_list[0]) == self.get_color(point):
                     EW += 1
                     nb_list[0] = self._neighbors(nb_list[0])[0]
@@ -558,7 +527,6 @@ class GoBoard(object):
         if direction == 'vertical':
             find_all = True
             while find_all:
-                print("finding vertical")
                 if self.get_color(nb_list[2]) == self.get_color(point):
                     NS += 1
                     nb_list[2] = self._neighbors(nb_list[2])[2]
@@ -572,6 +540,9 @@ class GoBoard(object):
         return [NS, EW, NWSE, NESW] 
     
     def detect_n_in_row(self,n):
+        '''
+        Checks for a group of n stones in the same direction on the board.
+        '''
         w,b = [],[]
         for r in self.rows:
             rows = self.has_n_in_list(r,n)
@@ -589,11 +560,12 @@ class GoBoard(object):
             return b+list((set(w)-set(b)))
         if self.current_player == WHITE:
             return w+list((set(b)-set(w)))
-        return []
+        #return []
     
     def has_n_in_list(self, list, n) -> GO_COLOR:
         """
-        Returns BLACK or WHITE if any five in a rows exist in the list.
+        Checks if there are n stones in a row.
+        Returns BLACK or WHITE if any n in a rows exist in the list.
         EMPTY otherwise.
         """
         prev = BORDER
@@ -604,8 +576,10 @@ class GoBoard(object):
         w = []
         for i in range(len(list)):
             if self.get_color(list[i]) == prev:
+                # Matching stone
                 counter += 1
             elif(empty == 0 and self.get_color(list[i]) == EMPTY):
+                # The stone is an empty space on the board.
                 empty = i
                 gap = counter
             else:
@@ -681,166 +655,6 @@ class GoBoard(object):
                             w.append(list[i+1])'''
         return [w,b]
 
-    # def detect_n_in_a_row(self, n) -> GO_COLOR:
-    #     """
-    #     Returns BLACK or WHITE if any five in a row is detected for the color
-    #     EMPTY otherwise.
-    #     """
-    #     #print("Entered detect_n_in_a_row")
-    #     all_n = {1: None, 2: None, 3: None}
-    #     counter = 0
-    #     black_moves = []
-    #     bd = {}
-    #     wd = {}
-    #     white_moves = []
-    #     for r in self.rows:
-    #         result, b, w = self.has_n_in_list(r, n)
-    #         if result != EMPTY:
-    #             if all_n[1] == None:
-    #                 all_n[1] = result
-    #             else:
-    #                 all_n[1].append(result)
-                
-    #             for val in w:
-    #                 if val in wd:
-    #                     wd[val] += 1
-    #                 else:
-    #                     wd[val] = 1
-    #             for val in b:
-    #                 if val in bd:
-    #                     bd[val] += 1
-    #                 else:
-    #                     bd[val] = 1
-    #             # white_moves += list(set(w)-set(white_moves))
-    #             # black_moves += list(set(b)-set(black_moves))
-    #             counter += 1
-    #             #return result
-    #     for c in self.cols:
-    #         result, b, w = self.has_n_in_list(c, n)
-    #         if result != EMPTY:
-    #             if all_n[2] == None:
-    #                     all_n[2] = result
-    #             else:
-    #                 all_n[2].append(result)
-    #             counter += 1
-    #             for val in w:
-    #                 if val in wd:
-    #                     wd[val] += 1
-    #                 else:
-    #                     wd[val] = 1
-    #             for val in b:
-    #                 if val in bd:
-    #                     bd[val] += 1
-    #                 else:
-    #                     bd[val] = 1
-    #             # white_moves += list(set(w)-set(white_moves))
-    #             # black_moves += list(set(b)-set(black_moves))
-    #             #return result
-    #     for d in self.diags:
-    #         result, b, w = self.has_n_in_list(d, n)
-    #         if result != EMPTY:
-    #             if all_n[3] == None:
-    #                     all_n[3] = result
-    #             else:
-    #                 all_n[3].append(result)
-    #             counter += 1
-    #             for val in w:
-    #                 if val in wd:
-    #                     wd[val] += 1
-    #                 else:
-    #                     wd[val] = 1
-    #             for val in b:
-    #                 if val in bd:
-    #                     bd[val] += 1
-    #                 else:
-    #                     bd[val] = 1
-    #             # white_moves += list(set(w)-set(white_moves))
-    #             # black_moves += list(set(b)-set(black_moves))
-    #             #return result 
-    #     return wd,bd
-    #     #print("WHITE:", wd)
-    #     #print("BLACK:", bd)
-    #     #print(all_n[1], all_n[2], all_n[3])
-    #     #print("Done detect_n_in_a_row")
-    #     #return EMPTY
-    
-
-    # def has_n_in_list(self, list, n) -> GO_COLOR:
-    #     """
-    #     Returns BLACK or WHITE if any five in a rows exist in the list.
-    #     EMPTY otherwise.
-    #     """
-    #     prev = BORDER
-    #     counter = 1
-    #     set = []
-    #     all = []
-    #     white_moves = []
-    #     black_moves = []
-    #     prev_stone = None
-    #     # empties = []
-        
-    #     for stone in list:
-    #         if prev_stone == None:
-    #             prev_stone = stone
-
-    #         #print("STONE", stone)
-    #         if self.get_color(stone) == 0 :
-                
-    #             if prev_stone in set:
-    #                 #print("Stone is empty and prev in set")
-    #                 if self.get_color(set[0]) == 1:
-    #                     #print('black')
-    #                     black_moves.append(stone)
-    #                 elif self.get_color(set[0]) == 2:
-    #                     #print('white')
-    #                     white_moves.append(stone)
-    #                     #print(white_moves)
-    #             # else:
-    #             #     empties.append(stone)
-                
-    #         # if self.get_color(stone) == 0:
-    #         #     set.append(stone)
-    #         if self.get_color(stone) == prev and self.get_color(stone) != 0:
-    #             #if self.get_color(stone) == 2:
-    #                 #print('match')
-    #             if set.count(prev) == 0:
-    #                 set.append(prev_stone)
-                    
-    #             set.append(stone)
-    #             counter += 1
-                
-    #         else:
-    #             set = []
-    #             counter = 1
-    #             prev = self.get_color(stone)
-    #             prev_stone = stone
-
-    #         if counter == n and prev != EMPTY and set not in all:
-    #             potential_empty = int(list.index(set[n-1]) - n)
-    #             #print("PE", potential_empty)
-    #             if potential_empty >= 0:
-    #                 #print("Success, the empty space is index", potential_empty)
-    #                 prev_empty_val = list[potential_empty]
-    #                 #print(prev_empty_val)
-    #                 if self.get_color(prev_empty_val) == 0:
-    #                     if self.get_color(set[0]) == 1:
-    #                         #print('black')
-    #                         black_moves.append(prev_empty_val)
-    #                     elif self.get_color(set[0]) == 2:
-    #                         #print('white')
-    #                         white_moves.append(prev_empty_val)
-    #                         #print(white_moves)
-    #             all.append(set)
-    #             #print(all)
-    #             #return prev
-        
-        
-    #     if len(all) != 0:
-    #         #print("ALL", all)
-    #         #print("WHITE", white_moves)
-    #         return all, black_moves, white_moves
-    #     else:
-    #         return EMPTY, black_moves, white_moves
 
 
 '''

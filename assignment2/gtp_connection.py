@@ -377,35 +377,47 @@ class GtpConnection:
         if legal_moves.size == 0:
             self.respond("pass")
             return
-        rng = np.random.default_rng()
-        choice = rng.choice(len(legal_moves))
-        move = legal_moves[choice]
-        move_coord = point_to_coord(move, self.board.size)
-        move_as_string = format_point(move_coord)
-        self.play_cmd([board_color, move_as_string, 'print_move'])
+        sol = callAlphabeta(self.board, self.timelimit)
+        if(sol == "unknown" or (sol[0] == -100000000000)):
+            rng = np.random.default_rng()
+            choice = rng.choice(len(legal_moves))
+            move = legal_moves[choice]
+            move_coord = point_to_coord(move, self.board.size)
+            move_as_string = format_point(move_coord)
+            self.play_cmd([board_color, move_as_string, 'print_move'])
+        else:
+            move = str(sol[1]).lower()
+            self.play_cmd([board_color, move,'print_move'])
+    
     
     def timelimit_cmd(self, args: List[str]) -> None:
         """ Implement this function for Assignment 2 """
         if (int(args[0]) >= 1 and int(args[0]) <= 100 ):
             self.timelimit = args[0]
-            # self.respond(self.timelimit)
+            #self.respond(self.timelimit)
         else:
             self.respond("timelimit has to be between 1 and 100 seconds")
-        pass
+        
 
     def solve_cmd(self, args: List[str]) -> None:
         """currently implementing the minmax function"""
         sol = callAlphabeta(self.board, self.timelimit)
         s = ""
-        self.respond(sol)
         if sol[0] == 0:
-            s = "draw "+ sol[1]
-        elif sol[0] == 100000000000:
-            s = "b"
-        elif sol[0] == -100000000000:
-            s = "w"
-        # self.respond(s)
+            s = "draw "+ str(sol[1]).lower()
+        if(self.board.current_player == BLACK):
+            if sol[0] == 100000000000:
+                s = "b " + str(sol[1]).lower()
+            elif sol[0] == -100000000000:
+                s = "w"
+        else:
+            if sol[0] == 100000000000:
+                s = "w " + str(sol[1]).lower()
+            elif sol[0] == -100000000000:
+                s = "b"
+        self.respond(s)
         pass
+       
 
     """
     ==========================================================================

@@ -11,8 +11,11 @@ from board_base import DEFAULT_SIZE, GO_POINT, GO_COLOR
 from board import GoBoard
 from board_util import GoBoardUtil
 from engine import GoEngine
-
-
+from boolean_minimax import alphabeta
+from hasher import ZobristHash
+from tt import TT
+INFINITY = 100000000000
+#seen_states = {}
 class Go0(GoEngine):
     def __init__(self) -> None:
         """
@@ -31,7 +34,12 @@ class Go0(GoEngine):
         A2: Implement your search algorithm to solve a board
         Change if deemed necessary
         """
-        pass
+        copyboard = board.copy()
+        hasher = ZobristHash(board.size)
+        tt = TT()
+        retult = []
+        return alphabeta(board, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+
 
 
 def run() -> None:

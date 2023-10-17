@@ -91,7 +91,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     hasher = ZobristHash(rootState.size)
     tt = TT()
     # result = sample(rootState)
-    printMoves(sample(rootState),rootState)
+    #printMoves(sample(rootState),rootState)
     # printMoves(result)
     retult = []
 
@@ -107,15 +107,15 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     # stats = pstats.Stats(profiler).sort_stats('ncalls')
     # stats.print_stats()
     ###### This is the final submission code #####
-    # signal.signal(signal.SIGALRM, handler) 
-    # signal.alarm(int(timelimit))
-    # try:
-    #     result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
-    # except TimeoutError as exc:
-    #     print("timedout")
-    #     result = "unknown"
-    # finally:
-    #     signal.alarm(0)
+    signal.signal(signal.SIGALRM, handler) 
+    signal.alarm(int(timelimit))
+    try:
+        result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    except TimeoutError as exc:
+        print("timedout")
+        result = "unknown"
+    finally:
+        signal.alarm(0)
     return alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
 
     # faulty hash (just in case)
@@ -139,8 +139,8 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     """
 
 def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHash):
-    #l = GoBoardUtil.get_twoD_board(copy)
-    #code = hasher.hash(l.flatten())
+    l = GoBoardUtil.get_twoD_board(copy)
+    code = hasher.hash(l.flatten())
     '''result = tt.lookup(code)
 
     if result != None:
@@ -148,7 +148,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
     '''
     if copy.end_of_game():
         result = (copy.staticallyEvaluateForToPlay(), None)
-        #tt.store(code, result)
+        tt.store(code, result)
         return result
 
     # when we have a move ordering function, add an if statement to check depth = 0 
@@ -169,11 +169,11 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
         #seen_states[code] = (value, copy.current_player)
         if alpha >= beta:
             result = (beta, point_to_coord(move, copy.size))
-            #tt.store(code, result)
+            tt.store(code, result)
             return result
 
     result = (alpha, point_to_coord(move, copy.size))
-    #tt.store(code, result)
+    tt.store(code, result)
     return result
 
 def sample(board:GoBoard):
@@ -185,6 +185,9 @@ def sample(board:GoBoard):
     return ordered_moves
 
 def order_moves(board: GoBoard):
+    '''
+    No longer being used.
+    '''
     cur_play = board.current_player
     ordered_moves = []
 
@@ -220,11 +223,11 @@ def order_moves(board: GoBoard):
                 return auto_block
 
         ordered_moves += list(black_3.keys())
-        # printMoves(ordered_moves)
+        
         ordered_moves += list(set(list(black_2.keys()))-set(ordered_moves))
-        # printMoves(ordered_moves)
+        
         ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
-        # printMoves(ordered_moves)
+        
         return ordered_moves
     
     else:
