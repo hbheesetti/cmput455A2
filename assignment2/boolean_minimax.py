@@ -16,6 +16,7 @@ import math
 import operator
 from board_base import coord_to_point
 INFINITY = 100000000000
+import random
 seen_states = {}
 
 # def minimaxBooleanOR(board: GoBoard):
@@ -229,6 +230,38 @@ def order_moves(board: GoBoard):
     
 
 
+def init_zobrist(board:GoBoard):
+    # fill a table of random numbers/bitstrings
+    table = [[0]*3 for i in range(board.size*board.size)]
+    for i in range(board.size*board.size):  # loop over the board, represented as a linear array
+        for j in range(3):
+            table[i][j] = random.getrandbits(64)
+    codes = (table,random.getrandbits(64)) # move codes + random bytes for if it is Black's turn
+    return codes
+
+def zobrist_hash_whole_board(board:GoBoard,codes):
+    table = codes[0]
+    black_to_play = codes[1]
+    hash_code = 0
+    board_table = GoBoardUtil.get_twoD_board(board)
+    if (board.current_player == BLACK):
+        hash_code = hash_code ^ black_to_play
+    for i in range(board.size):      # loop over the board positions
+        for j in range(board.size):
+                stone = board_table[i][j]
+                hash_code = hash_code ^ table[i*j][stone]
+    print (hash_code)
+    return hash_code
+
+'''unfinished'''
+def zobrist_hash_out_move(board:GoBoard, position, hash, codes): # updates the current board's hashcode by xoring out a move (assumed to be the last move played)
+    ''' somehow update hash for current player '''
+    black_to_play = codes[1]
+    table = codes[0]
+    color = board.board[position]
+    hash_code = hash ^ black_to_play #DOES THIS WORK???  ????
+    hash_code = hash_code ^ table[position][color]
+    return hash_code
 
 ####################################################################################################
 #### Helper Functions from the code base this is just for testing, we shouldnt need them later #####
