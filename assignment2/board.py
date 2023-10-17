@@ -606,14 +606,46 @@ class GoBoard(object):
             else:
                 counter = 1
                 prev = self.get_color(list[i])
-            if counter == n and prev != EMPTY:
-                if (i+1-n) > 0:
+            if counter == n-1 and prev != EMPTY:
+                # This is working for 3,4 in a row
+                ##################################################
+                # if (i+1-n) > 0:
+                #     if self.get_color(list[i-n]) == EMPTY:
+                #         if self.get_color(list[i]) == BLACK:
+                #             b.append(list[i-n])
+                #         elif self.get_color(list[i]) == WHITE:
+                #             w.append(list[i-n])
+                # if (i+1) < self.size:
+                #     if self.get_color(list[i+1]) == EMPTY:
+                #         if self.get_color(list[i]) == BLACK:
+                #             b.append(list[i+1])
+                #         elif self.get_color(list[i]) == WHITE:
+                #             w.append(list[i+1])
+                #######################################################33
+
+                ## this is not behaving exactly as expected but a it sholud work if we can fix it
+                ## it works for some cases like a1,a2,a4 gives a3 as the move
+                print(i+2-n)
+                if (i+2-n) > 0:
+                    if self.get_color(list[i-n]) == EMPTY and self.get_color(i-n-1) == self.get_color(list[i]):
+                        if self.get_color(list[i]) == BLACK:
+                            b.insert(0,list[i-n])
+                        elif self.get_color(list[i]) == WHITE:
+                            w.insert(0,list[i-n])
+                elif (i+1-n) > 0:
                     if self.get_color(list[i-n]) == EMPTY:
                         if self.get_color(list[i]) == BLACK:
                             b.append(list[i-n])
                         elif self.get_color(list[i]) == WHITE:
                             w.append(list[i-n])
-                if (i+1) < self.size:
+                # check above
+                if (i+2) < self.size:
+                    if self.get_color(list[i+1]) == EMPTY and self.get_color(list[i+2]) == self.get_color(list[i]):
+                        if self.get_color(list[i]) == BLACK:
+                            b.insert(0,list[i+1])
+                        elif self.get_color(list[i]) == WHITE:
+                            w.insert(0,list[i+1])
+                elif (i+1) < self.size:
                     if self.get_color(list[i+1]) == EMPTY:
                         if self.get_color(list[i]) == BLACK:
                             b.append(list[i+1])

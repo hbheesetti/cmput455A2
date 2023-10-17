@@ -91,20 +91,21 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     hasher = ZobristHash(rootState.size)
     tt = TT()
     # result = sample(rootState)
-    printMoves(rootState.detect_n_in_row(3))
+    printMoves(sample(rootState))
     # printMoves(result)
+    retult = []
 
     ###### Test without time limit code #####
     # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
     #print(GoBoardUtil.get_twoD_board(copyboard))
 
     ###### This is the profiling code ######
-    profiler = cProfile.Profile()
-    profiler.enable()
-    result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('ncalls')
-    stats.print_stats()
+    # profiler = cProfile.Profile()
+    # profiler.enable()
+    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    # profiler.disable()
+    # stats = pstats.Stats(profiler).sort_stats('ncalls')
+    # stats.print_stats()
     ###### This is the final submission code #####
     # signal.signal(signal.SIGALRM, handler) 
     # signal.alarm(int(timelimit))
@@ -115,7 +116,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     #     result = "unknown"
     # finally:
     #     signal.alarm(0)
-    return result
+    return []
 
     # faulty hash (just in case)
     """ list = GoBoardUtil.get_twoD_board(copy)
@@ -179,7 +180,7 @@ def sample(board:GoBoard):
     four = board.detect_n_in_row(4)
     three = board.detect_n_in_row(3)
     ordered_moves = four+three
-    ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
+    # ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
     return ordered_moves
 
 def order_moves(board: GoBoard):
