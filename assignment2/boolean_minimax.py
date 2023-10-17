@@ -90,7 +90,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     copyboard = rootState.copy()
     hasher = ZobristHash(rootState.size)
     tt = TT()
-    # result = sample(rootState)
+    #result = sample(rootState)
     #printMoves(sample(rootState),rootState)
     # printMoves(result)
     retult = []
@@ -107,15 +107,15 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     # stats = pstats.Stats(profiler).sort_stats('ncalls')
     # stats.print_stats()
     ###### This is the final submission code #####
-    signal.signal(signal.SIGALRM, handler) 
-    signal.alarm(int(timelimit))
-    try:
-        result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-    except TimeoutError as exc:
-        print("timedout")
-        result = "unknown"
-    finally:
-        signal.alarm(0)
+    #signal.signal(signal.SIGALRM, handler) 
+    #signal.alarm(int(timelimit))
+    #try:
+        #result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    #except TimeoutError as exc:
+        #print("timedout")
+        #result = "unknown"
+    #finally:
+        #signal.alarm(0)
     return alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
 
     # faulty hash (just in case)
@@ -139,13 +139,13 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     """
 
 def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHash):
-    l = GoBoardUtil.get_twoD_board(copy)
-    code = hasher.hash(l.flatten())
-    '''result = tt.lookup(code)
 
+    l = GoBoardUtil.get_twoD_board(copy)
+    code = hasher.hash(l.flatten(),copy.current_player)
+    result = tt.lookup(code)
     if result != None:
         return result
-    '''
+    
     if copy.end_of_game():
         result = (copy.staticallyEvaluateForToPlay(), None)
         tt.store(code, result)
@@ -154,6 +154,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
     # when we have a move ordering function, add an if statement to check depth = 0 
     # if yes use the move ordering function else use the board.legalmoves
     moves = sample(copy)
+    #moves = search_hash(copy,tt,hasher,moves)
     move = moves[0]
     
     for m in moves:
@@ -183,6 +184,30 @@ def sample(board:GoBoard):
     ordered_moves = list(dict.fromkeys(five+four+three))
     ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
     return ordered_moves
+
+
+'''def search_hash(board:GoBoard, tt: TT, hasher: ZobristHash, moves):
+    wins = []
+    others = []
+    copy = board.copy()
+    l = GoBoardUtil.get_twoD_board(copy)
+    code = hasher.hash(l.flatten(),copy.current_player)
+    for m in moves:
+        _,cap = copy.play_move(m,copy.current_player)
+        l = GoBoardUtil.get_twoD_board(copy)
+        code = hasher.update_hash(code,m,l.flatten())
+        result = tt.lookup(code)
+        if result == INFINITY:
+            wins.append(m)
+        else:
+            others.append(m)
+        copy.undo_move(m,cap)
+        l = GoBoardUtil.get_twoD_board(copy)
+        code = hasher.update_hash(code,m,l.flatten())
+    return wins + others'''
+
+def search_captures(board:GoBoard):
+    return True
 
 def order_moves(board: GoBoard):
     '''
