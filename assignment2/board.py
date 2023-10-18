@@ -631,7 +631,7 @@ class GoBoard(object):
                 empty = i
                 gap = counter
             else:
-                if(color == EMPTY):
+                if(color == EMPTY and empty != i-1):
                     empty = i # reset empty and subtract the gap from the counter
                     counter = counter - gap
                     gap = counter
@@ -655,19 +655,51 @@ class GoBoard(object):
         if(color == BLACK):
             if(empty > 0):
                 b.append(list[empty])
+            
+            if(self.current_player != BLACK):
+                if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY and i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                    b.append(list[i+1])
+                    b.append(list[i-n])
+            elif(n >= 4):
+                    if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                        b.append(list[i+1])
+                    if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                        b.append(list[i-n])
             else:
+                    if(i+2 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                        b.append(list[i+1])
+                    if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY):
+                        b.append(list[i-n])
+            '''else:
                 if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
                     b.append(list[i+1])
                 if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
-                    b.append(list[i-n])
+                    b.append(list[i-n])'''
         elif(color == WHITE):
             if(empty > 0):
                 w.append(list[empty])
+            
+            if(self.current_player != WHITE):
+                if(i + 1 < len(list) and self.get_color(list[i+1]) == EMPTY and i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                    w.append(list[i+1])
+                    w.append(list[i-n])
+
             else:
+                if(n >= 4 or self.current_player != WHITE):
+                    if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                        w.append(list[i+1])
+                    if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                        w.append(list[i-n])
+                else:
+                    if(i+2 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                        w.append(list[i+1])
+                    if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY):
+                        w.append(list[i-n])
+            '''else:
                 if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
                     w.append(list[i+1])
                 if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
-                    w.append(list[i-n])
+                    w.append(list[i-n])'''
         return [w,b]
     
 
