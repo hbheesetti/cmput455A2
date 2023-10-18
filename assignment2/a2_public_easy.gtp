@@ -85,6 +85,7 @@ timelimit 1
 30 genmove b
 #?[a5]
 
+boardsize 5
 clear_board
 play b c3
 play w c2

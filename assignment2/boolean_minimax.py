@@ -50,12 +50,13 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('ncalls')
     # stats.print_stats()
+    # return result
     ###### This is the final submission code #####
     def handler(s, f):
             raise TimeoutError("timedout")
     # signal.signal(signal.SIGALRM, handler) 
     # signal.alarm(int(timelimit))
-    #######################################################################################
+    # #######################################################################################
     print(timelimit)
     try:
         signal.signal(signal.SIGALRM, handler) 
@@ -63,6 +64,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
         result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
     except TimeoutError as exc:
         #print(exc)
+        print("timedout")
         result = "unknown"
     finally:
         signal.alarm(0)
@@ -101,15 +103,13 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
         tt.store(code, result)
         return result
 
-    # when we have a move ordering function, add an if statement to check depth = 0 
-    # if yes use the move ordering function else use the board.legalmoves
     moves = copy.bestMoves()
-    #moves = search_hash(copy,tt,hasher,moves)
     move = moves[0]
     
     for m in moves:
         if depth == 0:
             copy = board.copy()
+            copy.printMoves(moves)
         _,cap = copy.play_move(m, copy.current_player)
         value,_ = alphabeta(board, copy, -beta, -alpha,depth+1, tt, hasher)
         value = -value

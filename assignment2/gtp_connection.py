@@ -395,7 +395,6 @@ class GtpConnection:
     
     def timelimit_cmd(self, args: List[str]) -> None:
         """ Implement this function for Assignment 2 """
-        
         if (int(args[0]) >= 1 and int(args[0]) <= 100 ):
             self.timelimit = args[0]
             #self.respond(self.timelimit)
