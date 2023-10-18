@@ -21,58 +21,6 @@ import cProfile, pstats
 from hasher import ZobristHash
 from tt import TT
 
-# def minimaxBooleanOR(board: GoBoard):
-#     # print("lastmove",board.last_move)
-#     # print("current player", board.current_player)
-#     if board.detect_five_in_a_row():
-#         return GO_COLOR(board.current_player)
-#     # print(moves)
-#     # board.play_move(moves[0], GO_COLOR(board.current_player))
-#     # print(GoBoardUtil.get_twoD_board(board))
-#     # board.undo_move(moves[0])
-#     # print(GoBoardUtil.get_twoD_board(board))
-#     moves = board.legal_moves()
-#     for m in moves:
-#         board.play_move(m, GO_COLOR(board.current_player))
-#         print(GoBoardUtil.get_twoD_board(board))
-#         isWin = minimaxBooleanAND(board)
-#         board.undo_move()
-#         if isWin:
-#             return True
-#     return False
-
-# def minimaxBooleanAND(board: GoBoard):
-#     if board.detect_five_in_a_row():
-#         return GO_COLOR(board.current_player)
-#     moves = board.legal_moves()
-#     for m in moves:
-#         board.play_move(m, GO_COLOR(board.current_player))
-#         print(GoBoardUtil.get_twoD_board(board))
-#         isLoss = not minimaxBooleanOR(board)
-#         board.undo_move()
-#         if isLoss:
-#             return False
-#     return True
-
-
-# 
-# def alphabeta(board: GoBoard, alpha, beta, depth):
-#     if board.end_of_game() or depth == 0:
-#         return board.staticallyEvaluateForToPlay()
-#     move = None
-#     for m in board.legal_moves():
-#         _,capture = board.play_move(m, GO_COLOR(board.current_player))
-#         print(GoBoardUtil.get_twoD_board(board))
-#         value = -alphabeta(board, -beta, -alpha, depth-1)
-#         if value > alpha:
-#             alpha = value
-#         board.undo_move(m, capture)
-#         if value >= beta: 
-#             return beta # or value in failsoft (later)
-#     return alpha
-
-# initial call with full window
-
 import signal
 def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
     class TimeoutError(Exception):
@@ -91,15 +39,10 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     copyboard = rootState.copy()
     hasher = ZobristHash(rootState.size)
     tt = TT()
-    #result = sample(rootState)
-    #printMoves(sample(rootState),rootState)
-    # printMoves(result)
-    #result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-
-    ###### Test without time limit code #####
-    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
-    #print(GoBoardUtil.get_twoD_board(copyboard))
-
+    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    # result = rootState.bestMoves()
+    # printMoves(result, rootState)
+    # return result
     ###### This is the profiling code ######
     # profiler = cProfile.Profile()
     # profiler.enable()
@@ -112,7 +55,8 @@ def callAlphabeta(rootState: GoBoard, timelimit):
             raise TimeoutError("timedout")
     # signal.signal(signal.SIGALRM, handler) 
     # signal.alarm(int(timelimit))
-    #print(timelimit)
+    #######################################################################################
+    print(timelimit)
     try:
         signal.signal(signal.SIGALRM, handler) 
         signal.alarm(int(timelimit))
@@ -123,7 +67,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     finally:
         signal.alarm(0)
         return result
-
+    #########################################################################################
     # faulty hash (just in case)
     """ list = GoBoardUtil.get_twoD_board(copy)
     exp = 0

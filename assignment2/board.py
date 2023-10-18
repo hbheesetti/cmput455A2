@@ -555,7 +555,7 @@ class GoBoard(object):
         score = score + 10**len(w) - 10**len(b)
         #print("SCORE", score)
         w,b = self.detect_n_in_row(3)
-        score = score + 10**len(w) - 10**len(b)
+        score = score + 2**len(w) - 2**len(b)
         return score
     
     def detect_n_in_row(self,n):
