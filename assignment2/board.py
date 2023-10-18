@@ -14,6 +14,7 @@ The board uses a 1-dimensional representation with padding
 import numpy as np
 import operator
 from typing import List, Tuple
+import threading
 
 
 from board_base import (
@@ -564,7 +565,6 @@ class GoBoard(object):
             return w+b
         #return []
     '''
-    #NOTE below code is trying to combine 5/4/3 checking into one n in a row call, it is broken :(
     def detect_n_in_row(self,n):
         
         #Checks for a group of n stones in the same direction on the board.
@@ -611,7 +611,7 @@ class GoBoard(object):
         Returns BLACK or WHITE if any n in a rows exist in the list.
         EMPTY otherwise.
         """
-        prev = BORDER
+        prev = self.get_color(list[0])
         counter = 1
         empty = 0
         gap = 0
@@ -621,34 +621,38 @@ class GoBoard(object):
         w4 = []
         b3 = []
         w3 = []
-        for i in range(len(list)):
-            if self.get_color(list[i]) == prev:
+        for i in range(1,len(list)):
+            color = self.get_color(list[i])
+            if color == prev:
                 # Matching stone
                 counter += 1
-            elif(empty == 0 and self.get_color(list[i]) == EMPTY):
+            elif(empty == 0 and color == EMPTY):
                 # The stone is an empty space on the board.
                 empty = i
                 gap = counter
             else:
-                if(prev != EMPTY and prev != BORDER):
-                    if(counter == 2):
-                        w3,b3 = self.set_space(w3,b3,empty,list,3,i-1)
-                    elif(counter == 3):
-                        w4,b4 = self.set_space(w4,b4,empty,list,4,i-1)
-                    elif(counter == 4):
-                        w5,b5 = self.set_space(w5,b5,empty,list,5,i-1)
-                if(self.get_color(list[i]) == EMPTY):
+                if(color == EMPTY):
                     empty = i # reset empty and subtract the gap from the counter
                     counter = counter - gap
+                    gap = counter
                 else:
                     gap = 0
                     counter = 1
                     empty = 0
-                prev = self.get_color(list[i])
-        return [w5,w4,w3,b5,b4,b3]
+                    prev = color
+            if(prev != EMPTY and prev != BORDER and (i+1 >= len(list) or self.get_color(list[i+1]) != color)):
+                if(counter == 2):
+                    w3,b3 = self.set_space(w3,b3,empty,list,2,i,color)
+                elif(counter == 3):
+                    w4,b4 = self.set_space(w4,b4,empty,list,3,i,color)
+                elif(counter == 4):
+                    w5,b5 = self.set_space(w5,b5,empty,list,4,i,color)
 
-    def set_space(self,w,b,empty,list,n,i):
-        if(self.get_color(list[i]) == BLACK):
+        return [w5,w4,w3,b5,b4,b3]
+    
+    
+    def set_space(self,w,b,empty,list,n,i,color):
+        if(color == BLACK):
             if(empty > 0):
                 b.append(list[empty])
             else:
@@ -656,7 +660,7 @@ class GoBoard(object):
                     b.append(list[i+1])
                 if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
                     b.append(list[i-n])
-        elif(self.get_color(list[i]) == WHITE):
+        elif(color == WHITE):
             if(empty > 0):
                 w.append(list[empty])
             else:
@@ -666,6 +670,84 @@ class GoBoard(object):
                     w.append(list[i-n])
         return [w,b]
     
+
+    '''def set_space(self,w,b,empty,list,n,i):
+        if(self.get_color(list[i]) == BLACK):
+            if(empty > 0):
+                if(n == 4):
+                    b.append(list[empty])
+                else:
+                    count = 0
+                    for j in range(1,5-n):
+                        if(i+j >= len(list) or self.get_color(list[j+i]) == WHITE):
+                            break
+                        count+=1    
+                    for j in range(0,5-n-1):
+                        if(i-n-j-1 < 0 or self.get_color(list[i-n-j-1]) == WHITE):
+                            break
+                        count += 1
+                    if(count + n + 1 >= 5):
+                        b.append(list[empty])
+            else:
+                if(n == 4):
+                    if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                        b.append(list[i+1])
+                    if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                        b.append(list[i-n])
+                else:
+                    count = 0
+                    for j in range(1,5-n+1):
+                        if(i+j >= len(list) or self.get_color(list[j+i]) == WHITE):
+                            break
+                        count+=1    
+                    for j in range(0,5-n):
+                        if(i-n-j < 0 or self.get_color(list[i-n-j]) == WHITE):
+                            break
+                        count += 1
+                    if(count + n >= 5):
+                        if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                            b.append(list[i+1])
+                        if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                            b.append(list[i-n])
+        elif(self.get_color(list[i]) == WHITE):
+            if(empty > 0):
+                if(n == 4):
+                    b.append(list[empty])
+                else:
+                    count = 0
+                    for j in range(1,5-n):
+                        if(i+j >= len(list) or self.get_color(list[j+i]) == WHITE):
+                            break
+                        count+=1    
+                    for j in range(0,5-n-1):
+                        if(i-n-j-1 < 0 or self.get_color(list[i-n-j-1]) == WHITE):
+                            break
+                        count += 1
+                    if(count + n + 1 >= 5):
+                        b.append(list[empty])
+            else:
+                if(n == 4):
+                    if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                        w.append(list[i+1])
+                    if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                        w.append(list[i-n])
+                else:
+                    count = 0
+                    for j in range(1,5-n+1):
+                        if(i+j >= len(list) or self.get_color(list[j+i]) == WHITE):
+                            break
+                        count+=1    
+                    for j in range(0,5-n):
+                        if(i-n-j < 0 or self.get_color(list[i-n-j]) == WHITE):
+                            break
+                        count += 1
+                    if(count + n >= 5):
+                        if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                            w.append(list[i+1])
+                        if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                            w.append(list[i-n])
+        return [w,b]'''
+
     '''def has_n_in_list(self, list, n) -> GO_COLOR:
         """
         Checks if there are n stones in a row.

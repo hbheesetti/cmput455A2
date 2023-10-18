@@ -92,7 +92,8 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     tt = TT()
     #result = sample(rootState)
     #printMoves(sample(rootState),rootState)
-    # printMoves(result)
+    #quit()
+    #printMoves(result)
     retult = []
 
     ###### Test without time limit code #####
@@ -100,12 +101,13 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     #print(GoBoardUtil.get_twoD_board(copyboard))
 
     ###### This is the profiling code ######
-    # profiler = cProfile.Profile()
-    # profiler.enable()
-    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-    # profiler.disable()
-    # stats = pstats.Stats(profiler).sort_stats('ncalls')
-    # stats.print_stats()
+    profiler = cProfile.Profile()
+    profiler.enable()
+    result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('ncalls')
+    stats.print_stats()
+    return result
     ###### This is the final submission code #####
     #signal.signal(signal.SIGALRM, handler) 
     #signal.alarm(int(timelimit))
@@ -116,7 +118,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
         #result = "unknown"
     #finally:
         #signal.alarm(0)
-    return alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    #return alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
 
     # faulty hash (just in case)
     """ list = GoBoardUtil.get_twoD_board(copy)
