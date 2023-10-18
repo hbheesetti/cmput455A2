@@ -15,7 +15,6 @@ import numpy as np
 import operator
 from typing import List, Tuple
 
-
 from board_base import (
     board_array_size,
     coord_to_point,
@@ -33,7 +32,8 @@ from board_base import (
     GO_COLOR,
     GO_POINT,
 )
-
+from hasher import ZobristHash
+from tt import TT
 
 """
 The GoBoard class implements a board and basic functions to play
@@ -55,6 +55,8 @@ class GoBoard(object):
         self.black_captures = 0
         self.white_captures = 0
         self.capture_stack = []
+        self.hasher = ZobristHash(size)
+        self.tt = TT()
 
     def add_two_captures(self, color: GO_COLOR) -> None:
         if color == BLACK:
@@ -144,6 +146,8 @@ class GoBoard(object):
         self.calculate_rows_cols_diags()
         self.black_captures = 0
         self.white_captures = 0
+        self.hasher = ZobristHash(size)
+        self.tt = TT()
 
     def copy(self) -> 'GoBoard':
         b = GoBoard(self.size)
@@ -155,6 +159,8 @@ class GoBoard(object):
         b.current_player = self.current_player
         assert b.maxpoint == self.maxpoint
         b.board = np.copy(self.board)
+        b.hasher = self.hasher
+        b.tt = self.tt
         return b
 
     def get_color(self, point: GO_POINT) -> GO_COLOR:
@@ -440,12 +446,13 @@ class GoBoard(object):
             score = 100000000000
         elif self.detect_five_in_a_row() == opponent(self.current_player) or opp_captures == 10:
             score = -100000000000
+        elif len(self.get_empty_points()) == 0:
+            score = 0
         elif self.detect_five_in_a_row() == EMPTY:
-            score = self.getHeuristicScore()
-            
+            score = self.get_HeuristicScore()
         return score
     
-    def getHeuristicScore(self):
+    def get_HeuristicScore(self):
         score = 0
         opp = opponent(self.current_player)
         lines = self.rows + self.cols + self.diags
@@ -540,45 +547,65 @@ class GoBoard(object):
     
     def printMoves(self, list):
         print(" ".join([point_to_coord(word, self.size) for word in list]))
-    
-    def bestMoves(self):
-        arr = self.get_empty_points()
-        reverse = True
-        if self.current_player == WHITE:
-            reverse = False
-        result = sorted(arr, key=self.move_score, reverse=reverse)
-        # self.printMoves(result)
-        return result
 
-    def move_score(self, move):
-        _, cap = self.play_move(move, self.current_player)
-        score = -self.staticallyEvaluateForToPlay()
-        self.undo_move(move, cap)
-        # print(point_to_coord(move, self.size), score)
-        return score
+    # def staticallyEvaluateMove(self) :
+    #     captures = 0
+    #     opp_captures = 0
+
+    #     if(self.current_player == BLACK):
+    #         captures = self.black_captures
+    #         opp_captures = self.white_captures
+    #     else:
+    #         captures = self.white_captures
+    #         opp_captures = self.black_captures
+
+    #     if self.detect_five_in_a_row() == self.current_player or captures == 10:
+    #         score = 100000000000
+    #     elif self.detect_five_in_a_row() == opponent(self.current_player) or opp_captures == 10:
+    #         score = -100000000000
+    #     elif len(self.get_empty_points()) == 0:
+    #         score = 0
+    #     elif self.detect_five_in_a_row() == EMPTY:
+    #         score = self.getHeuristicScore()
+    #     return score
     
-    def getHeuristicScore(self):
-        score = 0
-        opp = opponent(self.current_player)
-        w,b = self.detect_n_in_row(4)
-        score = score + 10**len(w) - 10**len(b)
-        #print("SCORE", score)
-        w,b = self.detect_n_in_row(3)
-        score = score + 5**len(w) - 5**len(b)
-        w,b = self.detect_n_in_row(2)
-        score = score + 2**len(w) - 2**len(b)
-        return abs(score)
+    # def bestMoves(self):
+    #     arr = self.get_empty_points()
+    #     reverse = True
+    #     if self.current_player == WHITE:
+    #         reverse = False
+    #     result = sorted(arr, key=self.move_score, reverse=reverse)
+    #     # self.printMoves(result)
+    #     return result
+
+    # def move_score(self, move):
+    #     _, cap = self.play_move(move, self.current_player)
+    #     score = -self.staticallyEvaluateMove()
+    #     self.undo_move(move, cap)
+    #     # print(point_to_coord(move, self.size), score)
+    #     return score
     
-    def detect_n_in_row(self,n):
-        #Checks for a group of n stones in the same direction on the board.
-        w = []
-        b = []
-        lines = self.cols+self.rows+self.diags
-        for r in lines:
-            rows = self.has_n_in_list(r,n)
-            w += rows[0]
-            b += rows[1]
-        return w,b
+    # def getHeuristicScore(self):
+    #     score = 0
+    #     w,b = self.detect_n_in_row(4)
+    #     score = score + 100**len(w) - 100**len(b)
+    #     #print("SCORE", score)
+    #     w,b = self.detect_n_in_row(3)
+    #     score = score + 10**len(w) - 10**len(b)
+    #     w,b = self.detect_n_in_row(2)
+    #     score = score + 2**len(w) - 2**len(b)
+    #     return score
+    
+    # def detect_n_in_row(self,n):
+    #     #Checks for a group of n stones in the same direction on the board.
+    #     w = []
+    #     b = []
+    #     lines = self.cols+self.rows+self.diags
+    #     for r in lines:
+    #         rows = self.has_n_in_list(r,n)
+    #         w += rows[0]
+    #         b += rows[1]
+    #     return w,b
 
     # def has_n_in_list(self,list, n):
     #     b = []
@@ -607,78 +634,184 @@ class GoBoard(object):
     #                         w.append(list[i+1])
     #     return [w,b]
     
+    def detect_n_in_row(self,n):
+        #Checks for a group of n stones in the same direction on the board.
+        whited = {}
+        blackd = {}
+        b5 = []
+        w5 = []
+        b4 = []
+        w4 = []
+        b3 = []
+        w3 = []
+        for r in self.rows:
+            rows = self.has_n_in_list(r,n)
+            w5 += rows[0]
+            w4 += rows[1]
+            w3 += rows[2]
+            b5 += rows[3]
+            b4 += rows[4]
+            b3 += rows[5]
+        for c in self.cols:
+            cols = self.has_n_in_list(c,n)
+            w5 += cols[0]
+            w4 += cols[1]
+            w3 += cols[2]
+            b5 += cols[3]
+            b4 += cols[4]
+            b3 += cols[5]
+        for d in self.diags:
+            diags = self.has_n_in_list(d,n)
+            w5 += diags[0]
+            w4 += diags[1]
+            w3 += diags[2]
+            b5 += diags[3]
+            b4 += diags[4]
+            b3 += diags[5]
+
+        if self.current_player == BLACK:
+            return b5+w5+b4+w4+b3+w3
+        if self.current_player == WHITE:
+            return w5+b5+w4+b4+w3+b3
+        #return []
+    
     def has_n_in_list(self, list, n) -> GO_COLOR:
         """
         Checks if there are n stones in a row.
         Returns BLACK or WHITE if any n in a rows exist in the list.
         EMPTY otherwise.
         """
-        prev = BORDER
+        prev = self.get_color(list[0])
         counter = 1
         empty = 0
         gap = 0
-        b = []
-        w = []
-        for i in range(len(list)):
-            if self.get_color(list[i]) == prev:
+        b5 = []
+        w5 = []
+        b4 = []
+        w4 = []
+        b3 = []
+        w3 = []
+        for i in range(1,len(list)):
+            color = self.get_color(list[i])
+            if color == prev:
                 # Matching stone
                 counter += 1
-            elif(empty == 0 and self.get_color(list[i]) == EMPTY):
+            elif(empty == 0 and color == EMPTY):
                 # The stone is an empty space on the board.
                 empty = i
                 gap = counter
             else:
-                empty = 0
-                gap = 0
-                counter = 1
-                prev = self.get_color(list[i])
-            if(counter == n-1):
-                if(self.get_color(list[i]) == BLACK):
-                    if(empty > 0):
-                        b.append(list[empty])
-                        empty = 0 # reset empty and subtract the gap from the counter
-                        counter = counter - gap
-                    else:
-                        if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
-                            b.append(list[i+1])
-                        if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
-                            b.append(list[i-n])
-                elif(self.get_color(list[i]) == WHITE):
-                    if(empty > 0):
-                        w.append(list[empty])
-                        empty = 0 # reset empty and subtract the gap from the counter
-                        counter = counter - gap
-                    else:
-                        if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
-                            w.append(list[i+1])
-                        if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
-                            w.append(list[i-n])
-                if (i+2-n) > 0:
-                    if self.get_color(list[i-n]) == EMPTY and self.get_color(i-n-1) == self.get_color(list[i]):
-                        if self.get_color(list[i]) == BLACK:
-                            b.insert(0,list[i-n])
-                        elif self.get_color(list[i]) == WHITE:
-                            w.insert(0,list[i-n])
-                elif (i+1-n) > 0:
-                    if self.get_color(list[i-n]) == EMPTY:
-                        if self.get_color(list[i]) == BLACK:
-                            b.append(list[i-n])
-                        elif self.get_color(list[i]) == WHITE:
-                            w.append(list[i-n])
-                # check above
-                if (i+2) < self.size:
-                    if self.get_color(list[i+1]) == EMPTY and self.get_color(list[i+2]) == self.get_color(list[i]):
-                        if self.get_color(list[i]) == BLACK:
-                            b.insert(0,list[i+1])
-                        elif self.get_color(list[i]) == WHITE:
-                            w.insert(0,list[i+1])
-                elif (i+1) < self.size:
-                    if self.get_color(list[i+1]) == EMPTY:
-                        if self.get_color(list[i]) == BLACK:
-                            b.append(list[i+1])
-                        elif self.get_color(list[i]) == WHITE:
-                            w.append(list[i+1])
+                if(color == EMPTY):
+                    empty = i # reset empty and subtract the gap from the counter
+                    counter = counter - gap
+                    gap = counter
+                else:
+                    gap = 0
+                    counter = 1
+                    empty = 0
+                    prev = color
+            if(prev != EMPTY and prev != BORDER and (i+1 >= len(list) or self.get_color(list[i+1]) != color)):
+                if(counter == 2):
+                    w3,b3 = self.set_space(w3,b3,empty,list,2,i,color)
+                elif(counter == 3):
+                    w4,b4 = self.set_space(w4,b4,empty,list,3,i,color)
+                elif(counter == 4):
+                    w5,b5 = self.set_space(w5,b5,empty,list,4,i,color)
+
+        return [w5,w4,w3,b5,b4,b3]
+    
+    
+    def set_space(self,w,b,empty,list,n,i,color):
+        if(color == BLACK):
+            if(empty > 0):
+                b.append(list[empty])
+            else:
+                if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                    b.append(list[i+1])
+                if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                    b.append(list[i-n])
+        elif(color == WHITE):
+            if(empty > 0):
+                w.append(list[empty])
+            else:
+                if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+                    w.append(list[i+1])
+                if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+                    w.append(list[i-n])
         return [w,b]
+    
+    # def has_n_in_list(self, list, n) -> GO_COLOR:
+    #     """
+    #     Checks if there are n stones in a row.
+    #     Returns BLACK or WHITE if any n in a rows exist in the list.
+    #     EMPTY otherwise.
+    #     """
+    #     prev = BORDER
+    #     counter = 1
+    #     empty = 0
+    #     gap = 0
+    #     b = []
+    #     w = []
+    #     for i in range(len(list)):
+    #         if self.get_color(list[i]) == prev:
+    #             # Matching stone
+    #             counter += 1
+    #         elif(empty == 0 and self.get_color(list[i]) == EMPTY):
+    #             # The stone is an empty space on the board.
+    #             empty = i
+    #             gap = counter
+    #         else:
+    #             empty = 0
+    #             gap = 0
+    #             counter = 1
+    #             prev = self.get_color(list[i])
+    #         if(counter == n-1):
+    #             if(self.get_color(list[i]) == BLACK):
+    #                 if(empty > 0):
+    #                     b.append(list[empty])
+    #                     empty = 0 # reset empty and subtract the gap from the counter
+    #                     counter = counter - gap
+    #                 else:
+    #                     if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+    #                         b.append(list[i+1])
+    #                     if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+    #                         b.append(list[i-n])
+    #             elif(self.get_color(list[i]) == WHITE):
+    #                 if(empty > 0):
+    #                     w.append(list[empty])
+    #                     empty = 0 # reset empty and subtract the gap from the counter
+    #                     counter = counter - gap
+    #                 else:
+    #                     if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
+    #                         w.append(list[i+1])
+    #                     if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+    #                         w.append(list[i-n])
+    #             if (i+2-n) > 0:
+    #                 if self.get_color(list[i-n]) == EMPTY and self.get_color(i-n-1) == self.get_color(list[i]):
+    #                     if self.get_color(list[i]) == BLACK:
+    #                         b.insert(0,list[i-n])
+    #                     elif self.get_color(list[i]) == WHITE:
+    #                         w.insert(0,list[i-n])
+    #             elif (i+1-n) > 0:
+    #                 if self.get_color(list[i-n]) == EMPTY:
+    #                     if self.get_color(list[i]) == BLACK:
+    #                         b.append(list[i-n])
+    #                     elif self.get_color(list[i]) == WHITE:
+    #                         w.append(list[i-n])
+    #             # check above
+    #             if (i+2) < self.size:
+    #                 if self.get_color(list[i+1]) == EMPTY and self.get_color(list[i+2]) == self.get_color(list[i]):
+    #                     if self.get_color(list[i]) == BLACK:
+    #                         b.insert(0,list[i+1])
+    #                     elif self.get_color(list[i]) == WHITE:
+    #                         w.insert(0,list[i+1])
+    #             elif (i+1) < self.size:
+    #                 if self.get_color(list[i+1]) == EMPTY:
+    #                     if self.get_color(list[i]) == BLACK:
+    #                         b.append(list[i+1])
+    #                     elif self.get_color(list[i]) == WHITE:
+    #                         w.append(list[i+1])
+    #     return [w,b]
     
     # #NOTE below code is trying to combine 5/4/3 checking into one n in a row call, it is broken :(
     # def detect_n_in_row(self,n):

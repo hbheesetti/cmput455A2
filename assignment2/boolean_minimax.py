@@ -40,13 +40,13 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     hasher = ZobristHash(rootState.size)
     tt = TT()
     # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-    # result = rootState.bestMoves()
-    # printMoves(result, rootState)
+    # # result = rootState.bestMoves()
+    # # printMoves(result, rootState)
     # return result
     ###### This is the profiling code ######
     # profiler = cProfile.Profile()
     # profiler.enable()
-    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('ncalls')
     # stats.print_stats()
@@ -57,14 +57,12 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     # signal.signal(signal.SIGALRM, handler) 
     # signal.alarm(int(timelimit))
     # #######################################################################################
-    print(timelimit)
+    result = "unknown"
     try:
         signal.signal(signal.SIGALRM, handler) 
         signal.alarm(int(timelimit))
         result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
     except TimeoutError as exc:
-        #print(exc)
-        print("timedout")
         result = "unknown"
     finally:
         signal.alarm(0)
@@ -91,7 +89,6 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     """
 
 def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHash):
-
     l = GoBoardUtil.get_twoD_board(copy)
     code = hasher.hash(l.flatten(),copy.current_player)
     result = tt.lookup(code)
@@ -103,7 +100,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
         tt.store(code, result)
         return result
 
-    moves = copy.bestMoves()
+    moves = sample(copy)
     move = moves[0]
     
     for m in moves:
@@ -132,7 +129,7 @@ def sample(board:GoBoard):
     #four = board.detect_n_in_row(4)
     #three = board.detect_n_in_row(3)
     ordered_moves = list(dict.fromkeys(five))
-    ordered_moves = list(dict.fromkeys(five+four+three))
+    #ordered_moves = list(dict.fromkeys(five+four+three))
     ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
     return ordered_moves
 

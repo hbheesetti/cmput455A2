@@ -408,6 +408,8 @@ class GtpConnection:
         s = ""
         if sol[0] == 0:
             s = "draw "+ str(sol[1]).lower()
+        elif sol == "unknown":
+            print(sol)
         if(self.board.current_player == BLACK):
             if sol[0] == 100000000000:
                 s = "b " + str(sol[1]).lower()
