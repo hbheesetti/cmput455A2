@@ -553,6 +553,7 @@ class GoBoard(object):
         opp = opponent(self.current_player)
         w,b = self.detect_n_in_row(4)
         score = score + 10**len(w) - 10**len(b)
+        #print("SCORE", score)
         w,b = self.detect_n_in_row(3)
         score = score + 10**len(w) - 10**len(b)
         return score
@@ -586,7 +587,8 @@ class GoBoard(object):
                             b.append(list[i-n])
                         elif self.get_color(list[i]) == WHITE:
                             w.append(list[i-n])
-                if (i+1) < self.size:
+                if (i+1) < self.size and (i+1) < len(list):
+                    # print("i+1", i+1, "vs.", len(list))
                     if self.get_color(list[i+1]) == EMPTY:
                         if self.get_color(list[i]) == BLACK:
                             b.append(list[i+1])

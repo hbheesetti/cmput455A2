@@ -379,12 +379,15 @@ class GtpConnection:
             return
         sol = callAlphabeta(self.board, self.timelimit)
         if(sol == "unknown" or (sol[0] == -100000000000)):
-            rng = np.random.default_rng()
-            choice = rng.choice(len(legal_moves))
-            move = legal_moves[choice]
-            move_coord = point_to_coord(move, self.board.size)
-            move_as_string = format_point(move_coord)
-            self.play_cmd([board_color, move_as_string, 'print_move'])
+            if sol == "unknown":
+                print("= unknown")
+            else:
+                rng = np.random.default_rng()
+                choice = rng.choice(len(legal_moves))
+                move = legal_moves[choice]
+                move_coord = point_to_coord(move, self.board.size)
+                move_as_string = format_point(move_coord)
+                self.play_cmd([board_color, move_as_string, 'print_move'])
         else:
             move = str(sol[1]).lower()
             self.play_cmd([board_color, move,'print_move'])
@@ -392,6 +395,7 @@ class GtpConnection:
     
     def timelimit_cmd(self, args: List[str]) -> None:
         """ Implement this function for Assignment 2 """
+        
         if (int(args[0]) >= 1 and int(args[0]) <= 100 ):
             self.timelimit = args[0]
             #self.respond(self.timelimit)

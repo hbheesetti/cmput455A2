@@ -87,13 +87,14 @@ def printMoves(list,board:GoBoard):
     print (" ".join([point_to_coord(word, board.size) for word in list]))
 
 def callAlphabeta(rootState: GoBoard, timelimit):
+    #print("Calling Alphabeta")
     copyboard = rootState.copy()
     hasher = ZobristHash(rootState.size)
     tt = TT()
     #result = sample(rootState)
     #printMoves(sample(rootState),rootState)
     # printMoves(result)
-    result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    #result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
 
     ###### Test without time limit code #####
     # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
@@ -107,16 +108,21 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     # stats = pstats.Stats(profiler).sort_stats('ncalls')
     # stats.print_stats()
     ###### This is the final submission code #####
-    #signal.signal(signal.SIGALRM, handler) 
-    #signal.alarm(int(timelimit))
-    #try:
-        #result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-    #except TimeoutError as exc:
-        #print("timedout")
-        #result = "unknown"
-    #finally:
-        #signal.alarm(0)
-    return result
+    def handler(s, f):
+            raise TimeoutError("timedout")
+    # signal.signal(signal.SIGALRM, handler) 
+    # signal.alarm(int(timelimit))
+    #print(timelimit)
+    try:
+        signal.signal(signal.SIGALRM, handler) 
+        signal.alarm(int(timelimit))
+        result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    except TimeoutError as exc:
+        #print(exc)
+        result = "unknown"
+    finally:
+        signal.alarm(0)
+        return result
 
     # faulty hash (just in case)
     """ list = GoBoardUtil.get_twoD_board(copy)
@@ -182,7 +188,7 @@ def sample(board:GoBoard):
     #four = board.detect_n_in_row(4)
     #three = board.detect_n_in_row(3)
     ordered_moves = list(dict.fromkeys(five))
-    #ordered_moves = list(dict.fromkeys(five+four+three))
+    ordered_moves = list(dict.fromkeys(five+four+three))
     ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
     return ordered_moves
 
