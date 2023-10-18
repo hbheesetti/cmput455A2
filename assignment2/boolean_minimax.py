@@ -93,7 +93,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     #result = sample(rootState)
     #printMoves(sample(rootState),rootState)
     # printMoves(result)
-    retult = []
+    result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
 
     ###### Test without time limit code #####
     # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
@@ -116,7 +116,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
         #result = "unknown"
     #finally:
         #signal.alarm(0)
-    return alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    return result
 
     # faulty hash (just in case)
     """ list = GoBoardUtil.get_twoD_board(copy)
@@ -153,7 +153,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
 
     # when we have a move ordering function, add an if statement to check depth = 0 
     # if yes use the move ordering function else use the board.legalmoves
-    moves = sample(copy)
+    moves = copy.bestMoves()
     #moves = search_hash(copy,tt,hasher,moves)
     move = moves[0]
     
