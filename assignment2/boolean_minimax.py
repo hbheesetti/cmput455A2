@@ -61,7 +61,9 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     try:
         signal.signal(signal.SIGALRM, handler) 
         signal.alarm(int(timelimit))
+        
         result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+            
     except TimeoutError as exc:
         result = "unknown"
     finally:
