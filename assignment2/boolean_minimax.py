@@ -92,10 +92,8 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     tt = TT()
     #result = sample(rootState)
     #printMoves(sample(rootState),rootState)
-    #quit()
     #printMoves(result)
     retult = []
-
     ###### Test without time limit code #####
     # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
     #print(GoBoardUtil.get_twoD_board(copyboard))
@@ -108,6 +106,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     stats = pstats.Stats(profiler).sort_stats('ncalls')
     stats.print_stats()
     return result
+    #return result
     ###### This is the final submission code #####
     #signal.signal(signal.SIGALRM, handler) 
     #signal.alarm(int(timelimit))

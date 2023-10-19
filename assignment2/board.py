@@ -398,12 +398,23 @@ class GoBoard(object):
         """
         prev = BORDER
         counter = 1
-        for stone in list:
-            if self.get_color(stone) == prev:
+        #for stone in list:
+            #if self.get_color(stone) == prev:
+                #counter += 1
+            #else:
+                #counter = 1
+                #prev = self.get_color(stone)
+                #if()
+            #if counter == 5 and prev != EMPTY:
+                #return prev
+        for i in range(0,len(list)):
+            if self.get_color(list[i]) == prev:
                 counter += 1
             else:
+                if(len(list)-i < 5):
+                    return EMPTY
                 counter = 1
-                prev = self.get_color(stone)
+                prev = self.get_color(list[i])
             if counter == 5 and prev != EMPTY:
                 return prev
         return EMPTY
@@ -575,7 +586,7 @@ class GoBoard(object):
         b3 = []
         w3 = []
         for r in self.rows:
-            rows = self.has_n_in_list(r,n)
+            rows = self.has_n_in_list(r)
             w5 += rows[0]
             w4 += rows[1]
             w3 += rows[2]
@@ -583,7 +594,7 @@ class GoBoard(object):
             b4 += rows[4]
             b3 += rows[5]
         for c in self.cols:
-            cols = self.has_n_in_list(c,n)
+            cols = self.has_n_in_list(c)
             w5 += cols[0]
             w4 += cols[1]
             w3 += cols[2]
@@ -591,7 +602,7 @@ class GoBoard(object):
             b4 += cols[4]
             b3 += cols[5]
         for d in self.diags:
-            diags = self.has_n_in_list(d,n)
+            diags = self.has_n_in_list(d)
             w5 += diags[0]
             w4 += diags[1]
             w3 += diags[2]
@@ -601,17 +612,17 @@ class GoBoard(object):
 
         if self.current_player == BLACK:
             return b5+w5+b4+w4+b3+w3
-        if self.current_player == WHITE:
+        elif self.current_player == WHITE:
             return w5+b5+w4+b4+w3+b3
         #return []
     
-    def has_n_in_list(self, list, n) -> GO_COLOR:
+    def has_n_in_list(self, list) -> GO_COLOR:
         """
         Checks if there are n stones in a row.
         Returns BLACK or WHITE if any n in a rows exist in the list.
         EMPTY otherwise.
         """
-        prev = self.get_color(list[0])
+        prev = self.board[list[0]]
         counter = 1
         empty = 0
         gap = 0
@@ -622,7 +633,7 @@ class GoBoard(object):
         b3 = []
         w3 = []
         for i in range(1,len(list)):
-            color = self.get_color(list[i])
+            color = self.board[list[i]]
             if color == prev:
                 # Matching stone
                 counter += 1
@@ -630,17 +641,19 @@ class GoBoard(object):
                 # The stone is an empty space on the board.
                 empty = i
                 gap = counter
-            else:
-                if(color == EMPTY and empty != i-1):
+
+            elif(color == EMPTY and empty != i-1):
                     empty = i # reset empty and subtract the gap from the counter
                     counter = counter - gap
                     gap = counter
-                else:
-                    gap = 0
-                    counter = 1
-                    empty = 0
-                    prev = color
-            if(prev != EMPTY and prev != BORDER and (i+1 >= len(list) or self.get_color(list[i+1]) != color)):
+            else:
+                if(len(list) - i <= 2):
+                    return [w5,w4,w3,b5,b4,b3]
+                gap = 0
+                counter = 1
+                empty = 0
+                prev = color
+            if(color != EMPTY and (i+1 >= len(list) or self.board[list[i+1]] != color)):
                 if(counter == 2):
                     w3,b3 = self.set_space(w3,b3,empty,list,2,i,color)
                 elif(counter == 3):
@@ -655,21 +668,25 @@ class GoBoard(object):
         if(color == BLACK):
             if(empty > 0):
                 b.append(list[empty])
+                return [w,b]
+            elif(n >= 4):
+                if(i+1 < len(list) and self.board[list[i+1]] == EMPTY):
+                    b.append(list[i+1])
+                if(i-n >= 0 and self.board[list[i-n]] == EMPTY):
+                    b.append(list[i-n])
+                return [w,b]
             
-            if(self.current_player != BLACK):
-                if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY and i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+            elif(self.current_player != BLACK):
+                if(i+1 < len(list) and self.board[list[i+1]] == EMPTY and i-n >= 0 and self.board[list[i-n]] == EMPTY):
                     b.append(list[i+1])
                     b.append(list[i-n])
-            elif(n >= 4):
-                    if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
-                        b.append(list[i+1])
-                    if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
-                        b.append(list[i-n])
+                return [w,b]
             else:
-                    if(i+2 < len(list) and self.get_color(list[i+1]) == EMPTY):
-                        b.append(list[i+1])
-                    if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY):
-                        b.append(list[i-n])
+                if(i+2 < len(list) and self.board[list[i+1]] == EMPTY):
+                    b.append(list[i+1])
+                if(i-n-1 >= 0 and self.board[list[i-n]] == EMPTY):
+                    b.append(list[i-n])
+                return [w,b]
             '''else:
                 if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
                     b.append(list[i+1])
@@ -678,29 +695,32 @@ class GoBoard(object):
         elif(color == WHITE):
             if(empty > 0):
                 w.append(list[empty])
+                return [w,b]
+
+            elif(n >= 4):
+                if(i+1 < len(list) and self.board[list[i+1]] == EMPTY):
+                    w.append(list[i+1])
+                if(i-n >= 0 and self.board[list[i-n]] == EMPTY):
+                    w.append(list[i-n]) 
+                return [w,b]   
             
-            if(self.current_player != WHITE):
-                if(i + 1 < len(list) and self.get_color(list[i+1]) == EMPTY and i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
+            elif(self.current_player != WHITE):
+                if(i + 1 < len(list) and self.board[list[i+1]] == EMPTY and i-n >= 0 and self.board[list[i-n]] == EMPTY):
                     w.append(list[i+1])
                     w.append(list[i-n])
+                return [w,b]
 
             else:
-                if(n >= 4 or self.current_player != WHITE):
-                    if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
-                        w.append(list[i+1])
-                    if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
-                        w.append(list[i-n])
-                else:
-                    if(i+2 < len(list) and self.get_color(list[i+1]) == EMPTY):
-                        w.append(list[i+1])
-                    if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY):
-                        w.append(list[i-n])
-            '''else:
+                if(i+2 < len(list) and self.board[list[i+1]] == EMPTY):
+                    w.append(list[i+1])
+                if(i-n-1 >= 0 and self.board[list[i-n]] == EMPTY):
+                    w.append(list[i-n])
+        return [w,b]
+        '''else:
                 if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
                     w.append(list[i+1])
                 if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
                     w.append(list[i-n])'''
-        return [w,b]
     
 
     '''def set_space(self,w,b,empty,list,n,i):
