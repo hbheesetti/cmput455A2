@@ -11,67 +11,12 @@ from board_base import (
 )
 from board import GoBoard
 from board_util import GoBoardUtil
-from typing import Any, Callable, Dict, List, Tuple
-import math
-import operator
+from typing import Tuple
 from board_base import coord_to_point
 INFINITY = 100000000000
-seen_states = {}
 import cProfile, pstats
 from hasher import ZobristHash
 from tt import TT
-
-# def minimaxBooleanOR(board: GoBoard):
-#     # print("lastmove",board.last_move)
-#     # print("current player", board.current_player)
-#     if board.detect_five_in_a_row():
-#         return GO_COLOR(board.current_player)
-#     # print(moves)
-#     # board.play_move(moves[0], GO_COLOR(board.current_player))
-#     # print(GoBoardUtil.get_twoD_board(board))
-#     # board.undo_move(moves[0])
-#     # print(GoBoardUtil.get_twoD_board(board))
-#     moves = board.legal_moves()
-#     for m in moves:
-#         board.play_move(m, GO_COLOR(board.current_player))
-#         print(GoBoardUtil.get_twoD_board(board))
-#         isWin = minimaxBooleanAND(board)
-#         board.undo_move()
-#         if isWin:
-#             return True
-#     return False
-
-# def minimaxBooleanAND(board: GoBoard):
-#     if board.detect_five_in_a_row():
-#         return GO_COLOR(board.current_player)
-#     moves = board.legal_moves()
-#     for m in moves:
-#         board.play_move(m, GO_COLOR(board.current_player))
-#         print(GoBoardUtil.get_twoD_board(board))
-#         isLoss = not minimaxBooleanOR(board)
-#         board.undo_move()
-#         if isLoss:
-#             return False
-#     return True
-
-
-# 
-# def alphabeta(board: GoBoard, alpha, beta, depth):
-#     if board.end_of_game() or depth == 0:
-#         return board.staticallyEvaluateForToPlay()
-#     move = None
-#     for m in board.legal_moves():
-#         _,capture = board.play_move(m, GO_COLOR(board.current_player))
-#         print(GoBoardUtil.get_twoD_board(board))
-#         value = -alphabeta(board, -beta, -alpha, depth-1)
-#         if value > alpha:
-#             alpha = value
-#         board.undo_move(m, capture)
-#         if value >= beta: 
-#             return beta # or value in failsoft (later)
-#     return alpha
-
-# initial call with full window
 
 import signal
 def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
@@ -90,54 +35,32 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     copyboard = rootState.copy()
     hasher = ZobristHash(rootState.size)
     tt = TT()
-    #result = sample(rootState)
-    #printMoves(sample(rootState),rootState)
-    #printMoves(result)
-    retult = []
-    ###### Test without time limit code #####
-    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
-    #print(GoBoardUtil.get_twoD_board(copyboard))
 
-    ###### This is the profiling code ######
-    profiler = cProfile.Profile()
-    profiler.enable()
-    result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('ncalls')
-    stats.print_stats()
-    return result
+    #profiler = cProfile.Profile()
+    #profiler.enable()
+    #result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    #profiler.disable()
+    #stats = pstats.Stats(profiler).sort_stats('ncalls')
+    #stats.print_stats()
     #return result
-    ###### This is the final submission code #####
-    #signal.signal(signal.SIGALRM, handler) 
-    #signal.alarm(int(timelimit))
-    #try:
-        #result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-    #except TimeoutError as exc:
-        #print("timedout")
-        #result = "unknown"
-    #finally:
-        #signal.alarm(0)
-    #return alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    #return result
 
-    # faulty hash (just in case)
-    """ list = GoBoardUtil.get_twoD_board(copy)
-    exp = 0
-    code = 0
-    for item in list:
-        for num in item:
-            code += num*(math.pow(3,exp))
-            exp+=1
-    if(code in seen_states.keys()):
-        if(seen_states[code] == (-2*INFINITY,0)):
-            result = (-2*INFINITY,0)
-            return result
-        else:
-            result,player = seen_states[code]
-            if(player != copy.current_player):
-                result = result*-1
-            return  result,None
-    seen_states[code] = (-2*INFINITY,0)
-    """
+    ###### This is the final submission code #####
+    def handler(s, f):
+        raise TimeoutError("timedout")
+    # signal.signal(signal.SIGALRM, handler) 
+    # signal.alarm(int(timelimit))
+    # #######################################################################################
+    result = "unknown"
+    try:
+        signal.signal(signal.SIGALRM, handler) 
+        signal.alarm(int(timelimit))
+        result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
+    except TimeoutError as exc:
+        result = "unknown"
+    finally:
+        signal.alarm(0)
+        return result
 
 def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHash):
 
@@ -152,10 +75,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
         tt.store(code, result)
         return result
 
-    # when we have a move ordering function, add an if statement to check depth = 0 
-    # if yes use the move ordering function else use the board.legalmoves
     moves = sample(copy)
-    #moves = search_hash(copy,tt,hasher,moves)
     move = moves[0]
     
     for m in moves:
@@ -168,7 +88,6 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
             alpha = value
             move = m
         copy.undo_move(m,cap)
-        #seen_states[code] = (value, copy.current_player)
         if alpha >= beta:
             result = (beta, point_to_coord(move, copy.size))
             tt.store(code, result)
@@ -186,112 +105,6 @@ def sample(board:GoBoard):
     #ordered_moves = list(dict.fromkeys(five+four+three))
     ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
     return ordered_moves
-
-
-'''def search_hash(board:GoBoard, tt: TT, hasher: ZobristHash, moves):
-    wins = []
-    others = []
-    copy = board.copy()
-    l = GoBoardUtil.get_twoD_board(copy)
-    code = hasher.hash(l.flatten(),copy.current_player)
-    for m in moves:
-        _,cap = copy.play_move(m,copy.current_player)
-        l = GoBoardUtil.get_twoD_board(copy)
-        code = hasher.update_hash(code,m,l.flatten())
-        result = tt.lookup(code)
-        if result == INFINITY:
-            wins.append(m)
-        else:
-            others.append(m)
-        copy.undo_move(m,cap)
-        l = GoBoardUtil.get_twoD_board(copy)
-        code = hasher.update_hash(code,m,l.flatten())
-    return wins + others'''
-
-def search_captures(board:GoBoard):
-    return True
-
-def order_moves(board: GoBoard):
-    '''
-    No longer being used.
-    '''
-    cur_play = board.current_player
-    ordered_moves = []
-
-    black_4, white_4 = board.detect_n_in_a_row(4)
-
-    black_3, white_3 = board.detect_n_in_a_row(3)
-
-    black_2, white_2 = board.detect_n_in_a_row(2)
-
-    if cur_play == BLACK:
-        if len(list(black_4.keys())) > 0:
-            auto_win = list(black_4.keys())
-            return auto_win
-        if len(black_3) != 0:
-            if (max(black_3.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_win = [max(black_3.items(), key=operator.itemgetter(1))[0]]
-                return auto_win
-        if len(black_2) != 0:
-            if (max(black_2.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_win = [max(black_2.items(), key=operator.itemgetter(1))[0]]
-                return auto_win
-        
-        if len(list(white_4.keys())) > 0:
-            auto_block = list(white_4.keys())
-            return auto_block
-        if len(white_3) != 0:
-            if (max(white_3.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_block = [max(white_3.items(), key=operator.itemgetter(1))[0]]
-                return auto_block
-        if len(white_2) != 0: 
-            if (max(white_2.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_block = [max(white_2.items(), key=operator.itemgetter(1))[0]]
-                return auto_block
-
-        ordered_moves += list(black_3.keys())
-        
-        ordered_moves += list(set(list(black_2.keys()))-set(ordered_moves))
-        
-        ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
-        
-        return ordered_moves
-    
-    else:
-        if len(list(white_4.keys())) > 0:
-            auto_win = list(white_4.keys())
-            return auto_win
-        if len(white_3) != 0: 
-            if (max(white_3.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_win = [max(white_3.items(), key=operator.itemgetter(1))[0]]
-                return auto_win
-        if len(white_2) != 0: 
-            if (max(white_2.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_win = [max(white_2.items(), key=operator.itemgetter(1))[0]]
-                return auto_win
-        
-        if len(list(black_4.keys())) > 0:
-            auto_block = list(black_4.keys())
-            return auto_block
-        if len(black_3) != 0: 
-            if (max(black_3.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_block = [max(black_3.items(), key=operator.itemgetter(1))[0]]
-                return auto_block
-        if len(black_2) != 0: 
-            if (max(black_2.items(), key=operator.itemgetter(1))[1] >= 5):
-                auto_block = [max(black_2.items(), key=operator.itemgetter(1))[0]]
-                return auto_block
-
-        ordered_moves += list(white_3.keys())
-
-        ordered_moves += list(set(list(white_2.keys()))-set(ordered_moves))
-
-        ordered_moves += list(set(board.legal_moves())-set(ordered_moves))
-
-        return ordered_moves
-    
-
-
 
 ####################################################################################################
 #### Helper Functions from the code base this is just for testing, we shouldnt need them later #####
