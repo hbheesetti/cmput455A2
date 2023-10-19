@@ -14,7 +14,7 @@ import re
 from sys import stdin, stdout, stderr
 from typing import Any, Callable, Dict, List, Tuple
 import time
-from boolean_minimax import callAlphabeta, undoTest
+from boolean_minimax import callAlphabeta
 
 from board_base import (
     BLACK,
@@ -412,12 +412,12 @@ class GtpConnection:
             print(sol)
         if(self.board.current_player == BLACK):
             if sol[0] == 100000000000:
-                s = "b " + str(sol[1]).lower()
+                s = "b " + str(point_to_coord(sol[1],self.board.size)).lower()
             elif sol[0] == -100000000000:
                 s = "w"
         else:
             if sol[0] == 100000000000:
-                s = "w " + str(sol[1]).lower()
+                s = "w " + str(point_to_coord(sol[1],self.board.size)).lower()
             elif sol[0] == -100000000000:
                 s = "b"
         self.respond(s)

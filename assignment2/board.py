@@ -471,10 +471,6 @@ class GoBoard(object):
                     score += 10 ** currentPlayerCount - 10 ** opponentCount
         return score
 
-    
-    def printMoves(self, list):
-        print(" ".join([point_to_coord(word, self.size) for word in list]))
-
     def detect_n_in_row(self,n):
         #Checks for a group of n stones in the same direction on the board.
         b5 = []
@@ -590,60 +586,6 @@ class GoBoard(object):
                     if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY):
                         w.append(list[i-n])
         return [w,b]
-    
-
-def point_to_coord(point: GO_POINT, boardsize: int) -> Tuple[int, int]:
-    """
-    Transform point given as board array index 
-    to (row, col) coordinate representation.
-    Special case: PASS is transformed to (PASS,PASS)
-    """
-    if point == PASS:
-        return (PASS, PASS)
-    else:
-        NS = boardsize + 1
-        point = divmod(point, NS)
-        return format_point(point)
-
-def format_point(move: Tuple[int, int]) -> str:
-    """
-    Return move coordinates as a string such as 'A1', or 'PASS'.
-    """
-    assert MAXSIZE <= 25
-    column_letters = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
-    if move[0] == PASS:
-        return "PASS"
-    row, col = move
-    if not 0 <= row < MAXSIZE or not 0 <= col < MAXSIZE:
-        raise ValueErrorboard
-    return column_letters[col - 1] + str(row)
-
-def move_to_coord(point_str: str, board_size: int) -> Tuple[int, int]:
-    """
-    Convert a string point_str representing a point, as specified by GTP,
-    to a pair of coordinates (row, col) in range 1 .. board_size.
-    Raises ValueError if point_str is invalid
-    """
-    if not 2 <= board_size <= MAXSIZE:
-        raise ValueError("board_size out of range")
-    s = point_str.lower()
-    if s == "pass":
-        return (PASS, PASS)
-    try:
-        col_c = s[0]
-        if (not "a" <= col_c <= "z") or col_c == "i":
-            raise ValueError
-        col = ord(col_c) - ord("a")
-        if col_c < "i":
-            col += 1
-        row = int(s[1:])
-        if row < 1:
-            raise ValueError
-    except (IndexError, ValueError):
-        raise ValueError("wrong coordinate")
-    if not (col <= board_size and row <= board_size):
-        raise ValueError("wrong coordinate")
-    return coord_to_point(row, col,board_size)
 
 
 
