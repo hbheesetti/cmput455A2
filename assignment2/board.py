@@ -476,7 +476,6 @@ class GoBoard(object):
         print(" ".join([point_to_coord(word, self.size) for word in list]))
 
     def detect_n_in_row(self,n):
-        
         #Checks for a group of n stones in the same direction on the board.
         b5 = []
         w5 = []
@@ -541,7 +540,7 @@ class GoBoard(object):
                 empty = i
                 gap = counter
             else:
-                if(color == EMPTY and self.get_color(list[i+1]) != BORDER and self.get_color(list[i-1]) != BORDER):
+                if(color == EMPTY):
                     empty = i # reset empty and subtract the gap from the counter
                     counter = counter - gap
                     gap = counter
@@ -572,9 +571,9 @@ class GoBoard(object):
                     if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
                         b.append(list[i-n])
                 else:
-                    if(i+2 < len(list) and self.get_color(list[i+1]) == EMPTY and self.get_color(list[i+2]) != BORDER):
+                    if(i+2 < len(list) and self.get_color(list[i+1]) == EMPTY):
                         b.append(list[i+1])
-                    if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY and self.get_color(list[i-n-2]) != BORDER):
+                    if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY):
                         b.append(list[i-n])
         elif(color == WHITE):
             if(empty > 0):
@@ -583,14 +582,15 @@ class GoBoard(object):
                 if(n >= 4 or self.current_player != WHITE):
                     if(i+1 < len(list) and self.get_color(list[i+1]) == EMPTY):
                         w.append(list[i+1])
-                    if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY ):
+                    if(i-n >= 0 and self.get_color(list[i-n]) == EMPTY):
                         w.append(list[i-n])
                 else:
-                    if(i+2 < len(list) and self.get_color(list[i+1]) == EMPTY and self.get_color(list[i+2]) != BORDER):
+                    if(i+2 < len(list) and self.get_color(list[i+1]) == EMPTY):
                         w.append(list[i+1])
-                    if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY and self.get_color(list[i-n-2]) != BORDER):
+                    if(i-n-1 >= 0 and self.get_color(list[i-n]) == EMPTY):
                         w.append(list[i-n])
         return [w,b]
+    
 
 def point_to_coord(point: GO_POINT, boardsize: int) -> Tuple[int, int]:
     """

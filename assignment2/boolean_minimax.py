@@ -40,13 +40,13 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     hasher = ZobristHash(rootState.size)
     tt = TT()
     # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-    # # result = rootState.bestMoves()
-    # # printMoves(result, rootState)
+    # result = sample(rootState)
+    # printMoves(result, rootState)
     # return result
     ###### This is the profiling code ######
     # profiler = cProfile.Profile()
     # profiler.enable()
-    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0)
+    # result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('ncalls')
     # stats.print_stats()
@@ -61,9 +61,7 @@ def callAlphabeta(rootState: GoBoard, timelimit):
     try:
         signal.signal(signal.SIGALRM, handler) 
         signal.alarm(int(timelimit))
-        
         result = alphabeta(rootState, copyboard,-INFINITY, INFINITY, 0, tt, hasher)
-            
     except TimeoutError as exc:
         result = "unknown"
     finally:
@@ -96,7 +94,6 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
     result = tt.lookup(code)
     if result != None:
         return result
-    
     if copy.end_of_game():
         result = (copy.staticallyEvaluateForToPlay(), None)
         tt.store(code, result)
@@ -104,7 +101,6 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
 
     moves = sample(copy)
     move = moves[0]
-    
     for m in moves:
         if depth == 0:
             copy = board.copy()
@@ -121,7 +117,6 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
             result = (beta, point_to_coord(move, copy.size))
             tt.store(code, result)
             return result
-
     result = (alpha, point_to_coord(move, copy.size))
     tt.store(code, result)
     return result
