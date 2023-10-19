@@ -403,6 +403,10 @@ class GtpConnection:
         """currently implementing the minmax function"""
         sol = callAlphabeta(self.board, self.timelimit)
         s = ""
+        if(sol == "unknown"):
+            s = sol
+            self.respond(sol)
+            return
         if sol[0] == 0:
             s = "draw "+ str(sol[1]).lower()
         if(self.board.current_player == BLACK):
@@ -416,9 +420,6 @@ class GtpConnection:
             elif sol[0] == -100000000000:
                 s = "b"
         self.respond(s)
-        pass
-       
-
     """
     ==========================================================================
     Assignment 1 - game-specific commands end here
