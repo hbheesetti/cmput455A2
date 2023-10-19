@@ -104,7 +104,7 @@ def alphabeta(board: GoBoard,copy, alpha, beta, depth, tt: TT, hasher: ZobristHa
     for m in moves:
         if depth == 0:
             copy = board.copy()
-            copy.printMoves(moves)
+            #copy.printMoves(moves)
         _,cap = copy.play_move(m, copy.current_player)
         value,_ = alphabeta(board, copy, -beta, -alpha,depth+1, tt, hasher)
         value = -value
