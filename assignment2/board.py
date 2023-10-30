@@ -12,6 +12,7 @@ The board uses a 1-dimensional representation with padding
 """
 
 import numpy as np
+import operator
 from typing import List, Tuple
 
 from board_base import (
@@ -195,7 +196,7 @@ class GoBoard(object):
         return can_play_move
 
     def end_of_game(self) -> bool:
-        if self.get_empty_points().size == 0 or self.detect_five_in_a_row() != EMPTY or self.black_captures == 10 or self.white_captures== 0:
+        if self.get_empty_points().size == 0 or GO_COLOR(self.detect_five_in_a_row()) != EMPTY or self.black_captures >= 10 or self.white_captures >= 10:
             return True
         return False
     
@@ -320,17 +321,22 @@ class GoBoard(object):
         self.last_move = point
         O = opponent(color)
         offsets = [1, -1, self.NS, -self.NS, self.NS+1, -(self.NS+1), self.NS-1, -self.NS+1]
+        capturesList = []
         for offset in offsets:
             if self.board[point+offset] == O and self.board[point+(offset*2)] == O and self.board[point+(offset*3)] == color:
                 self.board[point+offset] = EMPTY
                 self.board[point+(offset*2)] = EMPTY
                 capture = True
-                self.capture_stack.append([point+offset,point+(offset*2),O])
+                capturesList.append(point+offset)
+                capturesList.append(point+(offset*2))
                 # print(self.capture_stack)
                 if color == BLACK:
                     self.black_captures += 2
                 else:
                     self.white_captures += 2
+        if(len(capturesList) > 0):
+            capturesList.append(O)
+            self.capture_stack.append(capturesList)
         # print(True, capture)
         #print(self.check_neighbours(point))
         self.detect_n_in_a_row(2)
@@ -379,7 +385,7 @@ class GoBoard(object):
                 return result
         for c in self.cols:
             result = self.has_five_in_list(c)
-            if result != EMPTY:
+            if result != EMPTY:        
                 return result
         for d in self.diags:
             result = self.has_five_in_list(d)
@@ -409,27 +415,41 @@ class GoBoard(object):
         if capture:
             # print(self.capture_stack, ()"undo", capture)
             cap = self.capture_stack.pop(len(self.capture_stack)-1)
-            self.board[cap[0]] = cap[2]
-            self.board[cap[1]] = cap[2]
-            if cap[2] == 1:
-                self.black_captures = self.black_captures - 2
-            elif cap[2] == 2:
-                self.white_captures = self.white_captures - 2
+            color = cap[len(cap)-1]
+            for i in range(len(cap)-1) :
+                self.board[cap[i]] = GO_COLOR(color)
+                if color == WHITE:
+                    self.black_captures = self.black_captures - 1
+                elif color == BLACK:
+                    self.white_captures = self.white_captures - 1
         self.board[point] = EMPTY
         self.current_player = opponent(self.current_player)
-
+        
     def legal_moves(self):
         moves = self.get_empty_points()
         return moves
 
     def staticallyEvaluateForToPlay(self) :
-        if self.detect_five_in_a_row() == EMPTY:
-            score = 0
-        elif self.detect_five_in_a_row() == BLACK:
-            score = -100000000000
-        elif self.detect_five_in_a_row() == WHITE:
+        captures = 0
+        opp_captures = 0
+
+        if(self.current_player == BLACK):
+            captures = self.black_captures
+            opp_captures = self.white_captures
+        else:
+            captures = self.white_captures
+            opp_captures = self.black_captures
+
+        if self.detect_five_in_a_row() == self.current_player or captures == 10:
             score = 100000000000
+
+        elif self.detect_five_in_a_row() == opponent(self.current_player) or opp_captures == 10:
+            score = -100000000000
+        elif self.detect_five_in_a_row() == EMPTY:
+            score = 0
+            
         return score
+
     
     def generate_score(self, move):
         '''
@@ -541,7 +561,7 @@ class GoBoard(object):
         Returns BLACK or WHITE if any five in a row is detected for the color
         EMPTY otherwise.
         """
-        print("Entered detect_n_in_a_row")
+        #print("Entered detect_n_in_a_row")
         all_n = {1: None, 2: None, 3: None}
         counter = 0
         black_moves = []
@@ -613,10 +633,15 @@ class GoBoard(object):
                 # white_moves += list(set(w)-set(white_moves))
                 # black_moves += list(set(b)-set(black_moves))
                 #return result
-        print("WHITE:", wd)
-        print("BLACK:", bd)
-        print(all_n[1], all_n[2], all_n[3])
-        print("Done detect_n_in_a_row")
+
+        
+
+        
+        return bd, wd
+        #print("WHITE:", wd)
+        #print("BLACK:", bd)
+        #print(all_n[1], all_n[2], all_n[3])
+        #print("Done detect_n_in_a_row")
         #return EMPTY
 
     def has_n_in_list(self, list, n) -> GO_COLOR:
@@ -641,14 +666,14 @@ class GoBoard(object):
             if self.get_color(stone) == 0 :
                 
                 if prev_stone in set:
-                    print("Stone is empty and prev in set")
+                    #print("Stone is empty and prev in set")
                     if self.get_color(set[0]) == 1:
-                        print('black')
+                        #print('black')
                         black_moves.append(stone)
                     elif self.get_color(set[0]) == 2:
-                        print('white')
+                        #print('white')
                         white_moves.append(stone)
-                        print(white_moves)
+                        #print(white_moves)
                 # else:
                 #     empties.append(stone)
                 
@@ -675,7 +700,7 @@ class GoBoard(object):
                 if potential_empty >= 0:
                     #print("Success, the empty space is index", potential_empty)
                     prev_empty_val = list[potential_empty]
-                    print(prev_empty_val)
+                    #print(prev_empty_val)
                     if self.get_color(prev_empty_val) == 0:
                         if self.get_color(set[0]) == 1:
                             #print('black')
@@ -690,8 +715,8 @@ class GoBoard(object):
         
         
         if len(all) != 0:
-            print("ALL", all)
-            print("WHITE", white_moves)
+            #print("ALL", all)
+            #print("WHITE", white_moves)
             return all, black_moves, white_moves
         else:
             return EMPTY, black_moves, white_moves
@@ -754,3 +779,4 @@ DELETE LATER
 #     if not (col <= board_size and row <= board_size):
 #         raise ValueError("wrong coordinate")
 #     return coord_to_point(row, col,board_size)
+
